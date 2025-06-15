@@ -12,7 +12,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Image src="/images/zulay c logo.png" alt="Zulay C" width={120} height={40} className="h-8 w-auto" />
+            <Image src="/images/zulay c logo.png" alt="Zulay C" width={160} height={50} className="h-10 w-auto" />
             <p className="text-sm text-muted-foreground">
               Calzado y moda de calidad para toda Colombia. Estilo, comodidad y elegancia en cada paso.
             </p>

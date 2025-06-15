@@ -76,9 +76,10 @@ export default function LoginPage() {
             <Image
               src="/images/zulay c logo.png"
               alt="Zulay C"
-              width={120}
-              height={40}
-              className="h-10 w-auto mx-auto mb-4"
+              width={180}
+              height={60}
+              className="h-14 w-auto mx-auto mb-4"
+              priority
             />
             <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
             <p className="text-muted-foreground">Accede a tu cuenta para una experiencia personalizada</p>
