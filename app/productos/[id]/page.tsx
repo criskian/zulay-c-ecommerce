@@ -54,7 +54,7 @@ const mockProducts = {
     reviews: 24,
     isNew: true,
     colors: [
-      { name: "Negro", value: "#000000", available: true },
+      { name: "Negro", value: "#272218", available: true },
       { name: "Café", value: "#8B4513", available: true },
       { name: "Marrón", value: "#A0522D", available: false }
     ],
@@ -88,7 +88,7 @@ const mockProducts = {
     reviews: 18,
     isNew: false,
     colors: [
-      { name: "Negro", value: "#000000", available: true },
+      { name: "Negro", value: "#272218", available: true },
       { name: "Café", value: "#8B4513", available: true },
       { name: "Marrón", value: "#A0522D", available: true }
     ],
@@ -123,7 +123,7 @@ const mockProducts = {
     isNew: false,
     colors: [
       { name: "Blanco", value: "#FFFFFF", available: true },
-      { name: "Negro", value: "#000000", available: true },
+      { name: "Negro", value: "#272218", available: true },
       { name: "Gris", value: "#808080", available: true }
     ],
     sizes: [
@@ -157,7 +157,7 @@ const mockProducts = {
     isNew: true,
     colors: [
       { name: "Blanco", value: "#FFFFFF", available: true },
-      { name: "Negro", value: "#000000", available: true }
+      { name: "Negro", value: "#272218", available: true }
     ],
     sizes: [
       { size: "36", available: true },
@@ -175,13 +175,79 @@ const mockProducts = {
     ],
     stock: 12,
     category: "zapatos"
+  },
+  "7": {
+    id: "7",
+    name: "Zapatos Casuales Oferta",
+    price: 120000,
+    originalPrice: 160000,
+    description: "Zapatos casuales cómodos perfectos para el día a día. Ahora con descuento especial por tiempo limitado.",
+    images: [
+      "/placeholder.svg?height=600&width=600&text=Casuales",
+      "/placeholder.svg?height=600&width=600&text=Vista+Lateral",
+      "/placeholder.svg?height=600&width=600&text=Detalle"
+    ],
+    rating: 4.5,
+    reviews: 22,
+    isNew: false,
+    colors: [
+      { name: "Café", value: "#8B4513", available: true },
+      { name: "Negro", value: "#272218", available: true }
+    ],
+    sizes: [
+      { size: "36", available: true },
+      { size: "37", available: true },
+      { size: "38", available: true },
+      { size: "39", available: true },
+      { size: "40", available: false }
+    ],
+    features: [
+      "Diseño casual versátil",
+      "Material de alta calidad",
+      "Suela cómoda y duradera",
+      "Perfecto para uso diario"
+    ],
+    stock: 18,
+    category: "zapatos"
+  },
+  "8": {
+    id: "8",
+    name: "Correa Elegante Descuento",
+    price: 60000,
+    originalPrice: 80000,
+    description: "Correa elegante de cuero genuino con descuento especial. Perfecta para looks formales y ocasionales.",
+    images: [
+      "/placeholder.svg?height=600&width=600&text=Correa+Elegante",
+      "/placeholder.svg?height=600&width=600&text=Hebilla"
+    ],
+    rating: 4.3,
+    reviews: 16,
+    isNew: false,
+    colors: [
+      { name: "Negro", value: "#272218", available: true },
+      { name: "Marrón", value: "#A0522D", available: true }
+    ],
+    sizes: [
+      { size: "S", available: true },
+      { size: "M", available: true },
+      { size: "L", available: true },
+      { size: "XL", available: true }
+    ],
+    features: [
+      "Cuero genuino premium",
+      "Hebilla metálica resistente",
+      "Diseño elegante y versátil",
+      "Precio especial por tiempo limitado"
+    ],
+    stock: 10,
+    category: "correas"
   }
 }
 
 const relatedProducts = [
-  { id: "3", name: "Zapatos Casuales", price: 155000, image: "/placeholder.svg?height=300&width=300", rating: 4.6 },
-  { id: "4", name: "Correa Deportiva", price: 65000, image: "/placeholder.svg?height=300&width=300", rating: 4.7 },
-  { id: "1", name: "Zapatos Formales", price: 195000, image: "/placeholder.svg?height=300&width=300", rating: 4.9 }
+  { id: "7", name: "Zapatos Casuales Oferta", price: 120000, image: "/placeholder.svg?height=300&width=300", rating: 4.5 },
+  { id: "8", name: "Correa Elegante Descuento", price: 60000, image: "/placeholder.svg?height=300&width=300", rating: 4.3 },
+  { id: "4", name: "Zapatos Deportivos", price: 165000, image: "/placeholder.svg?height=300&width=300", rating: 4.6 }
 ]
 
 export default function ProductPage() {

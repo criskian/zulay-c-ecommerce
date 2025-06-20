@@ -1,15 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
+import { motion } from "framer-motion"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { PageTransition } from "@/components/page-transition"
 import { ProductGrid } from "@/components/products/product-grid"
 import { ProductFilters } from "@/components/products/product-filters"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Filter, Grid, List } from "lucide-react"
 
-export default function ProductsPage() {
+function ProductsContent() {
+  const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [filters, setFilters] = useState({
     category: "",
@@ -20,17 +24,44 @@ export default function ProductsPage() {
     sortBy: "newest",
   })
 
+  // Establecer categoría desde query params
+  useEffect(() => {
+    const categoria = searchParams.get("categoria")
+    if (categoria) {
+      setFilters(prev => ({
+        ...prev,
+        category: categoria
+      }))
+    }
+  }, [searchParams])
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <PageTransition className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Todos los Productos</h1>
-              <p className="text-muted-foreground">Descubre nuestra colección completa de calzado y moda</p>
-            </div>
+            <motion.div
+              key={filters.category}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-3xl font-bold mb-2">
+                {filters.category 
+                  ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)}`
+                  : "Todos los Productos"
+                }
+              </h1>
+              <p className="text-muted-foreground">
+                {filters.category === "zapatos" && "Descubre nuestra colección de zapatos elegantes y cómodos"}
+                {filters.category === "correas" && "Encuentra la correa perfecta para completar tu look"}
+                {filters.category === "camisetas" && "Camisetas de calidad premium para cualquier ocasión"}
+                {filters.category === "ofertas" && "Las mejores ofertas y descuentos especiales"}
+                {!filters.category && "Descubre nuestra colección completa de calzado y moda"}
+              </p>
+            </motion.div>
 
             <div className="flex items-center gap-2">
               {/* View Mode Toggle */}
@@ -80,6 +111,22 @@ export default function ProductsPage() {
         </div>
       </main>
       <Footer />
-    </div>
+    </PageTransition>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <PageTransition className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </main>
+        <Footer />
+      </PageTransition>
+    }>
+      <ProductsContent />
+    </Suspense>
   )
 }

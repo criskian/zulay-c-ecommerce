@@ -60,32 +60,70 @@ const slideTransition = {
 export function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
+    if (!isAutoPlaying || isPaused) return
+
     const timer = setInterval(() => {
       setDirection(1)
       setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 6000) // Aumenté a 6 segundos para que se vean mejor las animaciones
+    }, 6000)
+    
     return () => clearInterval(timer)
-  }, [])
+  }, [isAutoPlaying, isPaused, currentSlide])
 
   const nextSlide = () => {
     setDirection(1)
     setCurrentSlide((prev) => (prev + 1) % slides.length)
+    // Pausar brevemente el auto-play cuando el usuario interactúa
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 5000) // Reanudar después de 5 segundos
   }
 
   const prevSlide = () => {
     setDirection(-1)
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+    // Pausar brevemente el auto-play cuando el usuario interactúa
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 5000) // Reanudar después de 5 segundos
   }
 
   const goToSlide = (index: number) => {
     setDirection(index > currentSlide ? 1 : -1)
     setCurrentSlide(index)
+    // Pausar brevemente el auto-play cuando el usuario interactúa
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 5000) // Reanudar después de 5 segundos
   }
 
+  const handleMouseEnter = () => setIsPaused(true)
+  const handleMouseLeave = () => setIsPaused(false)
+
+  // Navegación por teclado
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        prevSlide()
+      } else if (event.key === 'ArrowRight') {
+        nextSlide()
+      } else if (event.key === ' ') { // Barra espaciadora para pausar/reanudar
+        event.preventDefault()
+        setIsAutoPlaying(prev => !prev)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentSlide])
+
   return (
-    <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
+    <section 
+      className="relative h-[70vh] md:h-[80vh] overflow-hidden"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={currentSlide}
@@ -110,7 +148,7 @@ export function HeroSection() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
-              className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30" 
+              className="absolute inset-0 bg-gradient-to-r from-brand-dark/60 via-brand-dark/40 to-brand-dark/30" 
             />
             
             {/* Contenido con animaciones stagger */}
@@ -144,7 +182,7 @@ export function HeroSection() {
                     <Button
                       asChild
                       size="lg"
-                      className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-3 text-base shadow-lg"
+                      className="bg-white text-brand-dark hover:bg-white/90 font-semibold px-8 py-3 text-base shadow-lg"
                     >
                       <Link href={slides[currentSlide].href}>
                         {slides[currentSlide].cta}
@@ -158,70 +196,111 @@ export function HeroSection() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Arrows con hover effects */}
+      {/* Navigation Arrows con hover effects mejorados */}
       <motion.div
-        whileHover={{ scale: 1.1 }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        whileHover={{ scale: 1.1, x: -5 }}
         whileTap={{ scale: 0.9 }}
-        className="absolute left-4 top-1/2 -translate-y-1/2"
+        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10"
       >
         <Button
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full h-12 w-12"
+          className="text-white hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full h-12 w-12 md:h-14 md:w-14 transition-all duration-300 shadow-lg hover:shadow-xl"
           onClick={prevSlide}
         >
-          <ChevronLeft className="h-6 w-6" />
+          <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
         </Button>
       </motion.div>
       
       <motion.div
-        whileHover={{ scale: 1.1 }}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+        whileHover={{ scale: 1.1, x: 5 }}
         whileTap={{ scale: 0.9 }}
-        className="absolute right-4 top-1/2 -translate-y-1/2"
+        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10"
       >
         <Button
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full h-12 w-12"
+          className="text-white hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full h-12 w-12 md:h-14 md:w-14 transition-all duration-300 shadow-lg hover:shadow-xl"
           onClick={nextSlide}
         >
-          <ChevronRight className="h-6 w-6" />
+          <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
         </Button>
       </motion.div>
 
-      {/* Dots Indicator con animaciones */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3">
+      {/* Dots Indicator con animaciones mejoradas */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 backdrop-blur-sm bg-brand-dark/20 px-4 py-2 rounded-full"
+      >
         {slides.map((_, index) => (
           <motion.button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`relative h-3 rounded-full transition-all duration-300 ${
-              index === currentSlide ? "w-8 bg-white" : "w-3 bg-white/50 hover:bg-white/70"
+            className={`relative rounded-full transition-all duration-500 ${
+              index === currentSlide 
+                ? "h-3 w-8 bg-white shadow-lg" 
+                : "h-3 w-3 bg-white/50 hover:bg-white/80 hover:scale-110"
             }`}
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ 
+              scale: index === currentSlide ? 1.05 : 1.2,
+              backgroundColor: index === currentSlide ? "#ffffff" : "rgba(255,255,255,0.8)"
+            }}
+            whileTap={{ scale: 0.8 }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ 
+              delay: index * 0.1 + 0.8,
+              type: "spring",
+              stiffness: 300,
+              damping: 30 
+            }}
           >
             {index === currentSlide && (
               <motion.div
-                layoutId="activeDot"
-                className="absolute inset-0 bg-white rounded-full"
+                layoutId="activeDotHighlight"
+                className="absolute inset-0 bg-white rounded-full ring-2 ring-white/30"
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               />
             )}
+            
+            {/* Tooltip con el título del slide */}
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.8 }}
+              whileHover={{ opacity: 1, y: -8, scale: 1 }}
+                             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-brand-dark/80 text-white text-xs rounded whitespace-nowrap pointer-events-none"
+            >
+              {slides[index].title}
+                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-2 border-transparent border-t-brand-dark/80" />
+            </motion.div>
           </motion.button>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Progress bar */}
+      {/* Progress bar with auto-play indicator */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
         <motion.div
-          key={currentSlide}
+          key={`${currentSlide}-${isAutoPlaying}-${isPaused}`}
           initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 6, ease: "linear" }}
-          className="h-full bg-white"
+          animate={{ 
+            width: isAutoPlaying && !isPaused ? "100%" : "0%" 
+          }}
+          transition={{ 
+            duration: isAutoPlaying && !isPaused ? 6 : 0,
+            ease: "linear" 
+          }}
+          className="h-full bg-gradient-to-r from-white to-white/80 shadow-sm"
         />
       </div>
+
+
     </section>
   )
 }

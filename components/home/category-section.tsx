@@ -52,7 +52,7 @@ export function CategorySection() {
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                    <div className="absolute inset-0 bg-brand-dark/20 group-hover:bg-brand-dark/40 transition-colors" />
                     <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
                       <h3 className="text-xl font-bold mb-1">{category.name}</h3>
                       <p className="text-sm opacity-90">{category.description}</p>

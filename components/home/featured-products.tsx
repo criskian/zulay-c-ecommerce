@@ -155,7 +155,7 @@ export function FeaturedProducts() {
                       initial={{ opacity: 0 }}
                       whileHover={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
-                      className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-t from-brand-dark/20 to-transparent"
                     />
 
                     {/* Badges con animación */}

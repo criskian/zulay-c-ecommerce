@@ -92,6 +92,36 @@ const allProducts = [
     brand: "Premium",
     isNew: false,
   },
+  {
+    id: "7",
+    name: "Zapatos Casuales Oferta",
+    price: 120000,
+    originalPrice: 160000,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.5,
+    reviews: 22,
+    category: "zapatos",
+    sizes: ["36", "37", "38", "39", "40"],
+    colors: ["Café", "Negro"],
+    brand: "Zulay C",
+    isNew: false,
+    isOffer: true,
+  },
+  {
+    id: "8", 
+    name: "Correa Elegante Descuento",
+    price: 60000,
+    originalPrice: 80000,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.3,
+    reviews: 16,
+    category: "correas",
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Negro", "Marrón"],
+    brand: "Premium",
+    isNew: false,
+    isOffer: true,
+  },
 ]
 
 interface ProductGridProps {
@@ -117,7 +147,11 @@ export function ProductGrid({ viewMode, filters }: ProductGridProps) {
 
     // Apply filters
     if (filters.category) {
-      filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
+      if (filters.category === "ofertas") {
+        filteredProducts = filteredProducts.filter((p) => p.originalPrice && p.originalPrice > p.price)
+      } else {
+        filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
+      }
     }
 
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 500000) {
