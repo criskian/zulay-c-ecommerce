@@ -3,12 +3,15 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { motion, useInView } from "framer-motion"
 import { Heart, ShoppingBag, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/contexts/cart-context"
 import { useToast } from "@/hooks/use-toast"
+import { staggerContainer, staggerItem, productCard, buttonHover, fadeInUp } from "@/lib/animations"
+import { useRef } from "react"
 
 const featuredProducts = [
   {
@@ -63,6 +66,8 @@ export function FeaturedProducts() {
   const { dispatch } = useCart()
   const { toast } = useToast()
   const [favorites, setFavorites] = useState<string[]>([])
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, amount: 0.2 })
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -97,113 +102,243 @@ export function FeaturedProducts() {
   }
 
   return (
-    <section className="py-16 px-4 bg-muted/30">
+    <section className="py-16 px-4 bg-muted/30" ref={ref}>
       <div className="container mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Productos Destacados</h2>
+        {/* Header con animación */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Productos Destacados
+          </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Descubre nuestros productos más populares y las últimas tendencias
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-0">
-                <div className="relative aspect-square overflow-hidden">
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-
-                  {/* Badges */}
-                  <div className="absolute top-3 left-3 flex flex-col gap-2">
-                    {product.isNew && <Badge className="bg-green-500 hover:bg-green-600">Nuevo</Badge>}
-                    {product.originalPrice && (
-                      <Badge variant="destructive">
-                        -{Math.round((1 - product.price / product.originalPrice) * 100)}%
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-8 w-8"
-                      onClick={() => toggleFavorite(product.id)}
+        {/* Grid de productos con stagger */}
+        <motion.div 
+          variants={staggerContainer}
+          initial="initial"
+          animate={isInView ? "animate" : "initial"}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          {featuredProducts.map((product, index) => (
+            <motion.div
+              key={product.id}
+              variants={staggerItem}
+              whileHover="hover"
+              className="group"
+            >
+              <Card className="overflow-hidden border-0 shadow-md hover:shadow-xl transition-shadow duration-300 bg-background/80 backdrop-blur-sm">
+                <CardContent className="p-0">
+                  <div className="relative aspect-square overflow-hidden">
+                    {/* Imagen con zoom effect */}
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.4, ease: [0.6, -0.05, 0.01, 0.99] }}
+                      className="w-full h-full"
                     >
-                      <Heart
-                        className={`h-4 w-4 ${favorites.includes(product.id) ? "fill-red-500 text-red-500" : ""}`}
+                      <Image
+                        src={product.image || "/placeholder.svg"}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
                       />
-                    </Button>
-                  </div>
+                    </motion.div>
 
-                  {/* Quick Add to Cart */}
-                  <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button className="w-full" size="sm" onClick={() => addToCart(product)}>
-                      <ShoppingBag className="h-4 w-4 mr-2" />
-                      Agregar
-                    </Button>
-                  </div>
-                </div>
+                    {/* Overlay gradient on hover */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
+                    />
 
-                <div className="p-4">
-                  <Link href={`/productos/${product.id}`}>
-                    <h3 className="font-semibold mb-2 hover:text-primary transition-colors line-clamp-2">
-                      {product.name}
-                    </h3>
-                  </Link>
-
-                  <div className="flex items-center gap-1 mb-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                          }`}
-                        />
-                      ))}
+                    {/* Badges con animación */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                      {product.isNew && (
+                        <motion.div
+                          initial={{ scale: 0, rotate: -12 }}
+                          animate={{ scale: 1, rotate: -12 }}
+                          transition={{ delay: index * 0.1 + 0.5, type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          <Badge className="bg-green-500 hover:bg-green-600 shadow-md">Nuevo</Badge>
+                        </motion.div>
+                      )}
+                      {product.originalPrice && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: index * 0.1 + 0.7, type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          <Badge variant="destructive" className="shadow-md">
+                            -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                          </Badge>
+                        </motion.div>
+                      )}
                     </div>
-                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+
+                    {/* Actions - aparecen en hover */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileHover={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute top-3 right-3 flex flex-col gap-2"
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="h-8 w-8 backdrop-blur-sm bg-white/80 hover:bg-white shadow-md"
+                          onClick={() => toggleFavorite(product.id)}
+                        >
+                          <Heart
+                            className={`h-4 w-4 transition-colors ${
+                              favorites.includes(product.id) ? "fill-red-500 text-red-500" : "text-gray-600"
+                            }`}
+                          />
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+
+                    {/* Quick Add to Cart - slide up from bottom */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 40 }}
+                      whileHover={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}
+                      className="absolute bottom-3 left-3 right-3"
+                    >
+                      <motion.div
+                        variants={buttonHover}
+                        whileHover="hover"
+                        whileTap="tap"
+                      >
+                        <Button 
+                          className="w-full shadow-lg backdrop-blur-sm" 
+                          size="sm" 
+                          onClick={() => addToCart(product)}
+                        >
+                          <ShoppingBag className="h-4 w-4 mr-2" />
+                          Agregar al Carrito
+                        </Button>
+                      </motion.div>
+                    </motion.div>
                   </div>
 
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="font-bold text-lg">{formatPrice(product.price)}</span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    )}
-                  </div>
+                  {/* Contenido del producto */}
+                  <motion.div 
+                    className="p-4"
+                    whileHover={{ y: -2 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link href={`/productos/${product.id}`}>
+                      <motion.h3 
+                        className="font-semibold mb-2 hover:text-primary transition-colors line-clamp-2"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {product.name}
+                      </motion.h3>
+                    </Link>
 
-                  <div className="flex flex-wrap gap-1">
-                    {product.colors.slice(0, 3).map((color) => (
-                      <Badge key={color} variant="outline" className="text-xs">
-                        {color}
-                      </Badge>
-                    ))}
-                    {product.colors.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{product.colors.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                    {/* Rating stars con animación stagger */}
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: index * 0.1 + i * 0.05 + 1, type: "spring", stiffness: 500, damping: 30 }}
+                          >
+                            <Star
+                              className={`h-3 w-3 ${
+                                i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                              }`}
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                    </div>
+
+                    {/* Precios con animación */}
+                    <motion.div 
+                      className="flex items-center gap-2 mb-3"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 + 1.2, duration: 0.4 }}
+                    >
+                      <span className="font-bold text-lg">{formatPrice(product.price)}</span>
+                      {product.originalPrice && (
+                        <span className="text-sm text-muted-foreground line-through">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                      )}
+                    </motion.div>
+
+                    {/* Colores con stagger */}
+                    <motion.div 
+                      className="flex flex-wrap gap-1"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.1 + 1.4, duration: 0.4 }}
+                    >
+                      {product.colors.slice(0, 3).map((color, colorIndex) => (
+                        <motion.div
+                          key={color}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: index * 0.1 + colorIndex * 0.05 + 1.5, type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          <Badge variant="outline" className="text-xs">
+                            {color}
+                          </Badge>
+                        </motion.div>
+                      ))}
+                      {product.colors.length > 3 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: index * 0.1 + 1.7, type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          <Badge variant="outline" className="text-xs">
+                            +{product.colors.length - 3}
+                          </Badge>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        <div className="text-center mt-12">
-          <Button asChild size="lg" variant="outline">
-            <Link href="/productos">Ver Todos los Productos</Link>
-          </Button>
-        </div>
+        {/* CTA Button */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          transition={{ delay: 0.8, duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
+          className="text-center mt-12"
+        >
+          <motion.div
+            variants={buttonHover}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Button asChild size="lg" variant="outline" className="px-8 py-3 text-base shadow-md">
+              <Link href="/productos">Ver Todos los Productos</Link>
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

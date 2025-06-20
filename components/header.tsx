@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
 import { Search, ShoppingBag, User, Menu, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { buttonHover, fadeInDown } from "@/lib/animations"
 
 const navigation = [
   { name: "Zapatos", href: "/productos/zapatos" },
@@ -31,34 +33,52 @@ export function Header() {
   const { data: session } = useSession()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] }}
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Left Side: Logo + Navigation */}
           <div className="flex items-center space-x-8">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <Image
-                src="/images/zulay c logo.png"
-                alt="Zulay C"
-                width={160}
-                height={50}
-                className="h-12 w-auto transition-transform hover:scale-105"
-                priority
-              />
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+              <Link href="/" className="flex items-center space-x-2">
+                <Image
+                  src="/images/zulay c logo.png"
+                  alt="Zulay C"
+                  width={160}
+                  height={50}
+                  className="h-12 w-auto"
+                  priority
+                />
+              </Link>
+            </motion.div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              {navigation.map((item) => (
-                <Link
+              {navigation.map((item, index) => (
+                <motion.div
                   key={item.name}
-                  href={item.href}
-                  className="text-sm font-medium transition-colors hover:text-primary relative group"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 + 0.2, duration: 0.4 }}
                 >
-                  {item.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-                </Link>
+                  <Link
+                    href={item.href}
+                    className="text-sm font-medium transition-colors hover:text-primary relative group"
+                  >
+                    {item.name}
+                    <motion.span 
+                      className="absolute -bottom-1 left-0 h-0.5 bg-primary"
+                      initial={{ width: 0 }}
+                      whileHover={{ width: "100%" }}
+                      transition={{ duration: 0.3, ease: [0.6, -0.05, 0.01, 0.99] }}
+                    />
+                  </Link>
+                </motion.div>
               ))}
             </nav>
           </div>
@@ -79,26 +99,69 @@ export function Header() {
             {/* Actions */}
             <div className="flex items-center space-x-3">
               {/* Search - Mobile */}
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsSearchOpen(!isSearchOpen)}>
-                <Search className="h-5 w-5" />
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsSearchOpen(!isSearchOpen)}>
+                  <Search className="h-5 w-5" />
+                </Button>
+              </motion.div>
 
               {/* Favorites */}
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <Heart className="h-5 w-5" />
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Button variant="ghost" size="icon" className="hidden sm:flex">
+                  <motion.div
+                    whileHover={{ 
+                      scale: 1.2,
+                      color: "#ef4444" // red-500
+                    }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Heart className="h-5 w-5" />
+                  </motion.div>
+                </Button>
+              </motion.div>
 
               {/* Cart */}
-              <Link href="/carrito">
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingBag className="h-5 w-5" />
-                  {state.itemCount > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs animate-pulse">
-                      {state.itemCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link href="/carrito">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <ShoppingBag className="h-5 w-5" />
+                    <AnimatePresence>
+                      {state.itemCount > 0 && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          className="absolute -top-2 -right-2"
+                        >
+                          <Badge className="h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary">
+                            <motion.span
+                              key={state.itemCount}
+                              initial={{ scale: 1.5 }}
+                              animate={{ scale: 1 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {state.itemCount}
+                            </motion.span>
+                          </Badge>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Button>
+                </Link>
+              </motion.div>
 
               {/* User Menu */}
               {session ? (
@@ -154,15 +217,31 @@ export function Header() {
         </div>
 
         {/* Mobile Search */}
-        {isSearchOpen && (
-          <div className="lg:hidden py-4 border-t animate-in slide-in-from-top-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Buscar productos..." className="pl-10" autoFocus />
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.6, -0.05, 0.01, 0.99] }}
+              className="lg:hidden overflow-hidden border-t"
+            >
+              <motion.div
+                initial={{ y: -20 }}
+                animate={{ y: 0 }}
+                exit={{ y: -20 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="py-4"
+              >
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input placeholder="Buscar productos..." className="pl-10" autoFocus />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </header>
+    </motion.header>
   )
 }
