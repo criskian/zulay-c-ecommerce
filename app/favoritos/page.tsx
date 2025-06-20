@@ -81,8 +81,24 @@ export default function FavoritosPage() {
     return (
       <PageTransition className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 bg-gradient-to-b from-gray-50 to-white pt-16 pb-16">
-          <div className="container mx-auto px-4">
+        <main className="flex-1">
+          {/* Breadcrumb */}
+          <div className="border-b bg-muted/30">
+            <div className="container mx-auto px-4 py-4">
+              <motion.nav 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-sm text-muted-foreground"
+              >
+                <Link href="/" className="hover:text-foreground transition-colors">Inicio</Link>
+                <span className="mx-2">/</span>
+                <span className="text-foreground font-medium">Mis Favoritos</span>
+              </motion.nav>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-b from-gray-50 to-white py-8">
+            <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -113,6 +129,7 @@ export default function FavoritosPage() {
                 </Link>
               </div>
             </motion.div>
+            </div>
           </div>
         </main>
         <Footer />
@@ -123,13 +140,29 @@ export default function FavoritosPage() {
   return (
     <PageTransition className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 bg-gradient-to-b from-gray-50 to-white pt-16 pb-16">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+      <main className="flex-1">
+        {/* Breadcrumb */}
+        <div className="border-b bg-muted/30">
+          <div className="container mx-auto px-4 py-4">
+            <motion.nav 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm text-muted-foreground"
+            >
+              <Link href="/" className="hover:text-foreground transition-colors">Inicio</Link>
+              <span className="mx-2">/</span>
+              <span className="text-foreground font-medium">Mis Favoritos</span>
+            </motion.nav>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-b from-gray-50 to-white py-8">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -298,9 +331,10 @@ export default function FavoritosPage() {
             </div>
           </motion.div>
         )}
-      </div>
-    </main>
-    <Footer />
-  </PageTransition>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </PageTransition>
   )
 }

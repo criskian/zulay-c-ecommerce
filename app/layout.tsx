@@ -11,7 +11,12 @@ export const metadata: Metadata = {
   title: "Zulay C - Calzado y Moda Colombiana",
   description:
     "Descubre la mejor colección de zapatos, correas y moda en Colombia. Calidad, estilo y comodidad en cada paso.",
-  keywords: "zapatos colombia, calzado, moda, correas, camisetas, zulay c"
+  keywords: "zapatos colombia, calzado, moda, correas, camisetas, zulay c",
+  icons: {
+    icon: "/images/favicon zulay c.png",
+    shortcut: "/images/favicon zulay c.png",
+    apple: "/images/favicon zulay c.png",
+  }
 }
 
 export default function RootLayout({
