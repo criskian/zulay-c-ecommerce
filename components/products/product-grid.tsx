@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/contexts/cart-context"
+import { useFavorites } from "@/contexts/favorites-context"
 import { useToast } from "@/hooks/use-toast"
 
 // Mock products data
@@ -138,8 +139,8 @@ interface ProductGridProps {
 
 export function ProductGrid({ viewMode, filters }: ProductGridProps) {
   const [products, setProducts] = useState(allProducts)
-  const [favorites, setFavorites] = useState<string[]>([])
   const { dispatch } = useCart()
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -223,8 +224,30 @@ export function ProductGrid({ viewMode, filters }: ProductGridProps) {
     })
   }
 
-  const toggleFavorite = (productId: string) => {
-    setFavorites((prev) => (prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]))
+  const toggleFavorite = (product: (typeof allProducts)[0]) => {
+    const isCurrentlyFavorite = isFavorite(product.id)
+    
+    if (isCurrentlyFavorite) {
+      removeFavorite(product.id)
+      toast({
+        title: "Eliminado de favoritos",
+        description: `${product.name} se eliminó de tus favoritos`,
+      })
+    } else {
+      addFavorite({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.image,
+        rating: product.rating,
+        category: product.category,
+      })
+      toast({
+        title: "¡Agregado a favoritos!",
+        description: `${product.name} se agregó a tus favoritos`,
+      })
+    }
   }
 
   if (products.length === 0) {
@@ -283,9 +306,9 @@ export function ProductGrid({ viewMode, filters }: ProductGridProps) {
                     size="icon"
                     variant="secondary"
                     className="h-8 w-8"
-                    onClick={() => toggleFavorite(product.id)}
+                    onClick={() => toggleFavorite(product)}
                   >
-                    <Heart className={`h-4 w-4 ${favorites.includes(product.id) ? "fill-red-500 text-red-500" : ""}`} />
+                    <Heart className={`h-4 w-4 ${isFavorite(product.id) ? "fill-red-500 text-red-500" : ""}`} />
                   </Button>
                   <Button size="icon" variant="secondary" className="h-8 w-8" asChild>
                     <Link href={`/productos/${product.id}`}>

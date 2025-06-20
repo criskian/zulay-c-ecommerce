@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/contexts/cart-context"
+import { useFavorites } from "@/contexts/favorites-context"
 import { useToast } from "@/hooks/use-toast"
 import { staggerContainer, staggerItem, productCard, buttonHover, fadeInUp } from "@/lib/animations"
 import { useRef } from "react"
@@ -64,8 +65,8 @@ const featuredProducts = [
 
 export function FeaturedProducts() {
   const { dispatch } = useCart()
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const { toast } = useToast()
-  const [favorites, setFavorites] = useState<string[]>([])
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: 0.2 })
 
@@ -97,8 +98,30 @@ export function FeaturedProducts() {
     })
   }
 
-  const toggleFavorite = (productId: string) => {
-    setFavorites((prev) => (prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]))
+  const toggleFavorite = (product: (typeof featuredProducts)[0]) => {
+    const isCurrentlyFavorite = isFavorite(product.id)
+    
+    if (isCurrentlyFavorite) {
+      removeFavorite(product.id)
+      toast({
+        title: "Eliminado de favoritos",
+        description: `${product.name} se eliminó de tus favoritos`,
+      })
+    } else {
+      addFavorite({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.image,
+        rating: product.rating,
+        category: "destacados", // Categoría por defecto para productos destacados
+      })
+      toast({
+        title: "¡Agregado a favoritos!",
+        description: `${product.name} se agregó a tus favoritos`,
+      })
+    }
   }
 
   return (
@@ -197,11 +220,11 @@ export function FeaturedProducts() {
                           size="icon"
                           variant="secondary"
                           className="h-8 w-8 backdrop-blur-sm bg-white/80 hover:bg-white shadow-md"
-                          onClick={() => toggleFavorite(product.id)}
+                          onClick={() => toggleFavorite(product)}
                         >
                           <Heart
                             className={`h-4 w-4 transition-colors ${
-                              favorites.includes(product.id) ? "fill-red-500 text-red-500" : "text-gray-600"
+                              isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-600"
                             }`}
                           />
                         </Button>

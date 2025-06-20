@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/contexts/cart-context"
+import { useFavorites } from "@/contexts/favorites-context"
 import { useSession, signOut } from "next-auth/react"
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ const navigation = [
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { state } = useCart()
+  const { state: favorites } = useFavorites()
   const { data: session } = useSession()
 
   return (
@@ -115,17 +117,41 @@ export function Header() {
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Button variant="ghost" size="icon" className="hidden sm:flex">
-                  <motion.div
-                    whileHover={{ 
-                      scale: 1.2,
-                      color: "#ef4444" // red-500
-                    }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Heart className="h-5 w-5" />
-                  </motion.div>
-                </Button>
+                <Link href="/favoritos">
+                  <Button variant="ghost" size="icon" className="hidden sm:flex relative">
+                    <motion.div
+                      whileHover={{ 
+                        scale: 1.2,
+                        color: "#ef4444" // red-500
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Heart className="h-5 w-5" />
+                    </motion.div>
+                    <AnimatePresence>
+                      {favorites.itemCount > 0 && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          className="absolute -top-2 -right-2"
+                        >
+                          <Badge className="h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 hover:bg-red-600">
+                            <motion.span
+                              key={favorites.itemCount}
+                              initial={{ scale: 1.5 }}
+                              animate={{ scale: 1 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {favorites.itemCount}
+                            </motion.span>
+                          </Badge>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Button>
+                </Link>
               </motion.div>
 
               {/* Cart */}

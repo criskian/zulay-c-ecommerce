@@ -26,6 +26,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PageTransition } from "@/components/page-transition"
 import { useCart } from "@/contexts/cart-context"
+import { useFavorites } from "@/contexts/favorites-context"
 import { useToast } from "@/hooks/use-toast"
 import { 
   fadeInUp, 
@@ -256,13 +257,15 @@ export default function ProductPage() {
   const product = mockProducts[productId as keyof typeof mockProducts]
   
   const { dispatch } = useCart()
+  const { addFavorite, removeFavorite, isFavorite: checkIsFavorite } = useFavorites()
   const { toast } = useToast()
   
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedColor, setSelectedColor] = useState(0)
   const [selectedSize, setSelectedSize] = useState("")
   const [quantity, setQuantity] = useState(1)
-  const [isFavorite, setIsFavorite] = useState(false)
+  
+  const isFavorite = checkIsFavorite(product?.id || "")
 
   if (!product) {
     return (
@@ -321,6 +324,30 @@ export default function ProductPage() {
       title: "¡Agregado al carrito!",
       description: `${product.name} se agregó a tu carrito`,
     })
+  }
+
+  const handleToggleFavorite = () => {
+    if (isFavorite) {
+      removeFavorite(product.id)
+      toast({
+        title: "Eliminado de favoritos",
+        description: `${product.name} se eliminó de tus favoritos`,
+      })
+    } else {
+      addFavorite({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.images[0],
+        rating: product.rating,
+        category: product.category,
+      })
+      toast({
+        title: "¡Agregado a favoritos!",
+        description: `${product.name} se agregó a tus favoritos`,
+      })
+    }
   }
 
   const nextImage = () => {
@@ -669,7 +696,7 @@ export default function ProductPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      onClick={() => setIsFavorite(!isFavorite)}
+                      onClick={handleToggleFavorite}
                       className="px-4"
                     >
                       <Heart className={`h-5 w-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
