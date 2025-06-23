@@ -6,10 +6,407 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ===============================================
+// AUTHENTICATION MODELS (NextAuth.js)
+// ===============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// ===============================================
+// USER MANAGEMENT MODELS
+// ===============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  phone         String?
+  
+  // Address information
+  address       String?
+  city          String?
+  state         String?
+  postalCode    String?   @map("postal_code")
+  country       String?   @default("Colombia")
+  
+  // User preferences
+  newsletter    Boolean   @default(false)
+  
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  carts         Cart[]
+  orders        Order[]
+  reviews       Review[]
+  favorites     Favorite[]
+
+  @@map("users")
+}
+
+// ===============================================
+// PRODUCT CATALOG MODELS
+// ===============================================
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  image       String?
+  
+  // SEO fields
+  metaTitle       String?   @map("meta_title")
+  metaDescription String?   @map("meta_description")
+  
+  // Display order
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  
+  // Basic pricing (base price, variants can have different prices)
+  basePrice   Decimal   @map("base_price") @db.Decimal(10, 2)
+  
+  // Product images (JSON array of image URLs)
+  images      Json      @default("[]")
+  
+  // Product specifications (JSON for flexible attributes)
+  specifications Json?   @default("{}")
+  
+  // SEO fields
+  metaTitle       String?   @map("meta_title")
+  metaDescription String?   @map("meta_description")
+  
+  // Product status
+  isActive    Boolean   @default(true) @map("is_active")
+  isNew       Boolean   @default(false) @map("is_new")
+  isFeatured  Boolean   @default(false) @map("is_featured")
+  
+  // Category relationship
+  categoryId  String    @map("category_id")
+  category    Category  @relation(fields: [categoryId], references: [id])
+  
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  variants    ProductVariant[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+  favorites   Favorite[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          String    @id @default(cuid())
+  
+  // Variant identifiers
+  sku         String    @unique
+  color       String
+  size        String
+  
+  // Pricing for this specific variant
+  price       Decimal   @db.Decimal(10, 2)
+  originalPrice Decimal? @map("original_price") @db.Decimal(10, 2)
+  
+  // Inventory
+  stock       Int       @default(0)
+  minStock    Int       @default(0) @map("min_stock")
+  
+  // Variant-specific image (index in product images array)
+  imageIndex  Int?      @map("image_index")
+  
+  // Status
+  isActive    Boolean   @default(true) @map("is_active")
+  
+  // Product relationship
+  productId   String    @map("product_id")
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+
+  @@unique([productId, color, size])
+  @@map("product_variants")
+}
+
+// ===============================================
+// CART MANAGEMENT MODELS
+// ===============================================
+
+model Cart {
+  id        String   @id @default(cuid())
+  
+  // User relationship (nullable for guest carts)
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Guest cart identifier (for anonymous users)
+  sessionId String?  @map("session_id")
+  
+  // Cart status
+  status    CartStatus @default(ACTIVE)
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  expiresAt DateTime? @map("expires_at")
+
+  // Relations
+  items     CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  
+  // Cart relationship
+  cartId    String   @map("cart_id")
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  
+  // Product relationships
+  productId   String          @map("product_id")
+  product     Product         @relation(fields: [productId], references: [id])
+  
+  variantId   String          @map("variant_id")
+  variant     ProductVariant  @relation(fields: [variantId], references: [id])
+  
+  // Item details
+  quantity    Int
+  unitPrice   Decimal         @map("unit_price") @db.Decimal(10, 2)
+  
+  // Timestamps
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@unique([cartId, variantId])
+  @@map("cart_items")
+}
+
+enum CartStatus {
+  ACTIVE
+  ABANDONED
+  CONVERTED
+}
+
+// ===============================================
+// ORDER MANAGEMENT MODELS
+// ===============================================
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique @map("order_number")
+  
+  // User relationship
+  userId          String      @map("user_id")
+  user            User        @relation(fields: [userId], references: [id])
+  
+  // Order totals
+  subtotal        Decimal     @db.Decimal(10, 2)
+  shippingCost    Decimal     @map("shipping_cost") @db.Decimal(10, 2)
+  taxAmount       Decimal     @map("tax_amount") @db.Decimal(10, 2) @default(0)
+  discountAmount  Decimal     @map("discount_amount") @db.Decimal(10, 2) @default(0)
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(10, 2)
+  
+  // Order status
+  status          OrderStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
+  
+  // Shipping information
+  shippingAddress Json        @map("shipping_address")
+  billingAddress  Json?       @map("billing_address")
+  
+  // Tracking
+  trackingNumber  String?     @map("tracking_number")
+  shippedAt       DateTime?   @map("shipped_at")
+  deliveredAt     DateTime?   @map("delivered_at")
+  
+  // Payment information
+  paymentMethod   String?     @map("payment_method")
+  paymentId       String?     @map("payment_id")
+  
+  // Notes
+  customerNotes   String?     @map("customer_notes")
+  adminNotes      String?     @map("admin_notes")
+  
+  // Timestamps
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String         @id @default(cuid())
+  
+  // Order relationship
+  orderId     String         @map("order_id")
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Product relationships
+  productId   String         @map("product_id")
+  product     Product        @relation(fields: [productId], references: [id])
+  
+  variantId   String         @map("variant_id")
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  
+  // Item details at time of order
+  quantity    Int
+  unitPrice   Decimal        @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal        @map("total_price") @db.Decimal(10, 2)
+  
+  // Snapshot of product details (in case product is deleted/modified)
+  productSnapshot Json       @map("product_snapshot")
+  
+  // Timestamps
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// ===============================================
+// CUSTOMER ENGAGEMENT MODELS
+// ===============================================
+
+model Review {
+  id        String   @id @default(cuid())
+  
+  // User and Product relationships
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Review content
+  rating    Int      // 1-5 stars
+  title     String?
+  comment   String?  @db.Text
+  
+  // Review metadata
+  isVerified Boolean @default(false) @map("is_verified") // Verified purchase
+  isPublished Boolean @default(true) @map("is_published")
+  
+  // Helpful votes (can be extended later)
+  helpfulCount Int   @default(0) @map("helpful_count")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, productId]) // One review per user per product
+  @@map("reviews")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  
+  // User and Product relationships
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, productId]) // One favorite per user per product
+  @@map("favorites")
 }
