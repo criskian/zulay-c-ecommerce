@@ -45,21 +45,21 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Left Side: Logo + Navigation */}
           <div className="flex items-center space-x-8">
-            {/* Logo */}
+          {/* Logo */}
             <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-              <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/images/zulay c logo.png"
-                  alt="Zulay C"
+          <Link href="/" className="flex items-center space-x-2">
+            <Image
+              src="/images/zulay c logo.png"
+              alt="Zulay C"
                   width={160}
                   height={50}
                   className="h-12 w-auto"
                   priority
-                />
-              </Link>
+            />
+          </Link>
             </motion.div>
 
-            {/* Desktop Navigation */}
+          {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
               {navigation.map((item, index) => (
                 <motion.div
@@ -68,50 +68,50 @@ export function Header() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 + 0.2, duration: 0.4 }}
                 >
-                  <Link
-                    href={item.href}
-                    className="text-sm font-medium transition-colors hover:text-primary relative group"
-                  >
-                    {item.name}
+              <Link
+                href={item.href}
+                className="text-sm font-medium transition-colors hover:text-primary relative group"
+              >
+                {item.name}
                     <motion.span 
                       className="absolute -bottom-1 left-0 h-0.5 bg-primary"
                       initial={{ width: 0 }}
                       whileHover={{ width: "100%" }}
                       transition={{ duration: 0.3, ease: [0.6, -0.05, 0.01, 0.99] }}
                     />
-                  </Link>
+              </Link>
                 </motion.div>
-              ))}
-            </nav>
+            ))}
+          </nav>
           </div>
 
           {/* Right Side: Search + Actions */}
           <div className="flex items-center space-x-4">
-            {/* Search Bar - Desktop */}
+          {/* Search Bar - Desktop */}
             <div className="hidden lg:flex items-center">
               <div className="relative w-80">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Buscar productos..."
-                  className="pl-10 transition-all focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Buscar productos..."
+                className="pl-10 transition-all focus:ring-2 focus:ring-primary/20"
+              />
             </div>
+          </div>
 
-            {/* Actions */}
+          {/* Actions */}
             <div className="flex items-center space-x-3">
-              {/* Search - Mobile */}
+            {/* Search - Mobile */}
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsSearchOpen(!isSearchOpen)}>
-                  <Search className="h-5 w-5" />
-                </Button>
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsSearchOpen(!isSearchOpen)}>
+              <Search className="h-5 w-5" />
+            </Button>
               </motion.div>
 
-              {/* Favorites */}
+            {/* Favorites */}
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -126,7 +126,7 @@ export function Header() {
                       }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Heart className="h-5 w-5" />
+              <Heart className="h-5 w-5" />
                     </motion.div>
                     <AnimatePresence>
                       {favorites.itemCount > 0 && (
@@ -150,21 +150,21 @@ export function Header() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </Button>
+            </Button>
                 </Link>
               </motion.div>
 
-              {/* Cart */}
+            {/* Cart */}
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link href="/carrito">
-                  <Button variant="ghost" size="icon" className="relative">
-                    <ShoppingBag className="h-5 w-5" />
+            <Link href="/carrito">
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingBag className="h-5 w-5" />
                     <AnimatePresence>
-                      {state.itemCount > 0 && (
+                {state.itemCount > 0 && (
                         <motion.div
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
@@ -179,72 +179,72 @@ export function Header() {
                               animate={{ scale: 1 }}
                               transition={{ duration: 0.2 }}
                             >
-                              {state.itemCount}
+                    {state.itemCount}
                             </motion.span>
-                          </Badge>
+                  </Badge>
                         </motion.div>
-                      )}
+                )}
                     </AnimatePresence>
-                  </Button>
-                </Link>
+              </Button>
+            </Link>
               </motion.div>
 
-              {/* User Menu */}
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <User className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem asChild>
-                      <Link href="/perfil">Mi Perfil</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/pedidos">Mis Pedidos</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/favoritos">Favoritos</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => signOut()}>Cerrar Sesión</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/auth/login">Iniciar Sesión</Link>
-                </Button>
-              )}
-
-              {/* Mobile Menu */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu className="h-5 w-5" />
+            {/* User Menu */}
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <div className="flex flex-col space-y-4 mt-8">
-                    {navigation.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className="text-lg font-medium transition-colors hover:text-primary"
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
-                </SheetContent>
-              </Sheet>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/perfil">Mi Perfil</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/pedidos">Mis Pedidos</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/favoritos">Favoritos</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>Cerrar Sesión</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/auth/login">Iniciar Sesión</Link>
+              </Button>
+            )}
+
+            {/* Mobile Menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80">
+                <div className="flex flex-col space-y-4 mt-8">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="text-lg font-medium transition-colors hover:text-primary"
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
             </div>
           </div>
         </div>
 
         {/* Mobile Search */}
         <AnimatePresence>
-          {isSearchOpen && (
+        {isSearchOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -259,13 +259,13 @@ export function Header() {
                 transition={{ duration: 0.3, delay: 0.1 }}
                 className="py-4"
               >
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input placeholder="Buscar productos..." className="pl-10" autoFocus />
-                </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input placeholder="Buscar productos..." className="pl-10" autoFocus />
+            </div>
               </motion.div>
             </motion.div>
-          )}
+        )}
         </AnimatePresence>
       </div>
     </motion.header>

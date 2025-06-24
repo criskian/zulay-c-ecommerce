@@ -157,18 +157,18 @@ export function FeaturedProducts() {
               className="group"
             >
               <Card className="overflow-hidden border-0 shadow-md hover:shadow-xl transition-shadow duration-300 bg-background/80 backdrop-blur-sm">
-                <CardContent className="p-0">
-                  <div className="relative aspect-square overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative aspect-square overflow-hidden">
                     {/* Imagen con zoom effect */}
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.4, ease: [0.6, -0.05, 0.01, 0.99] }}
                       className="w-full h-full"
                     >
-                      <Image
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.name}
-                        fill
+                  <Image
+                    src={product.image || "/placeholder.svg"}
+                    alt={product.name}
+                    fill
                         className="object-cover"
                       />
                     </motion.div>
@@ -179,10 +179,10 @@ export function FeaturedProducts() {
                       whileHover={{ opacity: 1 }}
                       transition={{ duration: 0.3 }}
                       className="absolute inset-0 bg-gradient-to-t from-brand-dark/20 to-transparent"
-                    />
+                  />
 
                     {/* Badges con animación */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                  <div className="absolute top-3 left-3 flex flex-col gap-2">
                       {product.isNew && (
                         <motion.div
                           initial={{ scale: 0, rotate: -12 }}
@@ -192,18 +192,18 @@ export function FeaturedProducts() {
                           <Badge className="bg-green-500 hover:bg-green-600 shadow-md">Nuevo</Badge>
                         </motion.div>
                       )}
-                      {product.originalPrice && (
+                    {product.originalPrice && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           transition={{ delay: index * 0.1 + 0.7, type: "spring", stiffness: 500, damping: 30 }}
                         >
                           <Badge variant="destructive" className="shadow-md">
-                            -{Math.round((1 - product.price / product.originalPrice) * 100)}%
-                          </Badge>
+                        -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                      </Badge>
                         </motion.div>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
                     {/* Actions - aparecen en hover */}
                     <motion.div
@@ -216,18 +216,18 @@ export function FeaturedProducts() {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        <Button
-                          size="icon"
-                          variant="secondary"
+                    <Button
+                      size="icon"
+                      variant="secondary"
                           className="h-8 w-8 backdrop-blur-sm bg-white/80 hover:bg-white shadow-md"
                           onClick={() => toggleFavorite(product)}
-                        >
-                          <Heart
+                    >
+                      <Heart
                             className={`h-4 w-4 transition-colors ${
                               isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-600"
                             }`}
-                          />
-                        </Button>
+                      />
+                    </Button>
                       </motion.div>
                     </motion.div>
 
@@ -248,12 +248,12 @@ export function FeaturedProducts() {
                           size="sm" 
                           onClick={() => addToCart(product)}
                         >
-                          <ShoppingBag className="h-4 w-4 mr-2" />
+                      <ShoppingBag className="h-4 w-4 mr-2" />
                           Agregar al Carrito
-                        </Button>
+                    </Button>
                       </motion.div>
                     </motion.div>
-                  </div>
+                </div>
 
                   {/* Contenido del producto */}
                   <motion.div 
@@ -261,36 +261,36 @@ export function FeaturedProducts() {
                     whileHover={{ y: -2 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Link href={`/productos/${product.id}`}>
+                  <Link href={`/productos/${product.id}`}>
                       <motion.h3 
                         className="font-semibold mb-2 hover:text-primary transition-colors line-clamp-2"
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.2 }}
                       >
-                        {product.name}
+                      {product.name}
                       </motion.h3>
-                    </Link>
+                  </Link>
 
                     {/* Rating stars con animación stagger */}
-                    <div className="flex items-center gap-1 mb-2">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
+                  <div className="flex items-center gap-1 mb-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
                           <motion.div
                             key={i}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ delay: index * 0.1 + i * 0.05 + 1, type: "spring", stiffness: 500, damping: 30 }}
                           >
-                            <Star
-                              className={`h-3 w-3 ${
-                                i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                              }`}
-                            />
+                        <Star
+                          className={`h-3 w-3 ${
+                            i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                          }`}
+                        />
                           </motion.div>
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                      ))}
                     </div>
+                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                  </div>
 
                     {/* Precios con animación */}
                     <motion.div 
@@ -299,12 +299,12 @@ export function FeaturedProducts() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 + 1.2, duration: 0.4 }}
                     >
-                      <span className="font-bold text-lg">{formatPrice(product.price)}</span>
-                      {product.originalPrice && (
-                        <span className="text-sm text-muted-foreground line-through">
-                          {formatPrice(product.originalPrice)}
-                        </span>
-                      )}
+                    <span className="font-bold text-lg">{formatPrice(product.price)}</span>
+                    {product.originalPrice && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatPrice(product.originalPrice)}
+                      </span>
+                    )}
                     </motion.div>
 
                     {/* Colores con stagger */}
@@ -322,25 +322,25 @@ export function FeaturedProducts() {
                           transition={{ delay: index * 0.1 + colorIndex * 0.05 + 1.5, type: "spring", stiffness: 500, damping: 30 }}
                         >
                           <Badge variant="outline" className="text-xs">
-                            {color}
-                          </Badge>
+                        {color}
+                      </Badge>
                         </motion.div>
-                      ))}
-                      {product.colors.length > 3 && (
+                    ))}
+                    {product.colors.length > 3 && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           transition={{ delay: index * 0.1 + 1.7, type: "spring", stiffness: 500, damping: 30 }}
                         >
-                          <Badge variant="outline" className="text-xs">
-                            +{product.colors.length - 3}
-                          </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        +{product.colors.length - 3}
+                      </Badge>
                         </motion.div>
-                      )}
+                    )}
                     </motion.div>
                   </motion.div>
-                </CardContent>
-              </Card>
+              </CardContent>
+            </Card>
             </motion.div>
           ))}
         </motion.div>
@@ -358,8 +358,8 @@ export function FeaturedProducts() {
             whileTap="tap"
           >
             <Button asChild size="lg" variant="outline" className="px-8 py-3 text-base shadow-md">
-              <Link href="/productos">Ver Todos los Productos</Link>
-            </Button>
+            <Link href="/productos">Ver Todos los Productos</Link>
+          </Button>
           </motion.div>
         </motion.div>
       </div>

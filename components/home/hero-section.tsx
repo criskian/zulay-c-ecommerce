@@ -179,15 +179,15 @@ export function HeroSection() {
                     whileHover="hover"
                     whileTap="tap"
                   >
-                    <Button
-                      asChild
-                      size="lg"
+                <Button
+                  asChild
+                  size="lg"
                       className="bg-white text-brand-dark hover:bg-white/90 font-semibold px-8 py-3 text-base shadow-lg"
-                    >
+                >
                       <Link href={slides[currentSlide].href}>
                         {slides[currentSlide].cta}
                       </Link>
-                    </Button>
+                </Button>
                   </motion.div>
                 </motion.div>
               </motion.div>
@@ -205,14 +205,14 @@ export function HeroSection() {
         whileTap={{ scale: 0.9 }}
         className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10"
       >
-        <Button
-          variant="ghost"
-          size="icon"
+      <Button
+        variant="ghost"
+        size="icon"
           className="text-white hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full h-12 w-12 md:h-14 md:w-14 transition-all duration-300 shadow-lg hover:shadow-xl"
-          onClick={prevSlide}
-        >
+        onClick={prevSlide}
+      >
           <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
-        </Button>
+      </Button>
       </motion.div>
       
       <motion.div
@@ -223,14 +223,14 @@ export function HeroSection() {
         whileTap={{ scale: 0.9 }}
         className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10"
       >
-        <Button
-          variant="ghost"
-          size="icon"
+      <Button
+        variant="ghost"
+        size="icon"
           className="text-white hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full h-12 w-12 md:h-14 md:w-14 transition-all duration-300 shadow-lg hover:shadow-xl"
-          onClick={nextSlide}
-        >
+        onClick={nextSlide}
+      >
           <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
-        </Button>
+      </Button>
       </motion.div>
 
       {/* Dots Indicator con animaciones mejoradas */}

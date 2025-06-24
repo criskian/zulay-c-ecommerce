@@ -151,7 +151,7 @@ export function ProductGrid({ viewMode, filters }: ProductGridProps) {
       if (filters.category === "ofertas") {
         filteredProducts = filteredProducts.filter((p) => p.originalPrice && p.originalPrice > p.price)
       } else {
-        filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
+      filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
       }
     }
 
