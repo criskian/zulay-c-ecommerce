@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { FormField } from '@/components/ui/form-field'
 import { PhoneInput } from '@/components/ui/phone-input'
+import { AddressForm } from '@/components/forms/address-form'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, ArrowLeft, Shield, Lock, UserCheck } from 'lucide-react'
@@ -38,7 +39,8 @@ const registerSchema = z.object({
   phone: z.string()
     .optional()
     .refine((val) => !val || val.length === 0 || /^[+]?[\d\s-()]+$/.test(val), 
-      'Por favor ingresa un teléfono válido'),
+      'Por favor ingresa un teléfono válido')
+    .transform((val) => val || undefined),
   
   acceptPrivacyPolicy: z.boolean()
     .refine((val) => val === true, 
@@ -114,6 +116,8 @@ export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [newUserData, setNewUserData] = useState<any>(null)
 
   const {
     register,
@@ -126,7 +130,11 @@ export default function RegisterPage() {
     clearErrors
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      acceptPrivacyPolicy: false,
+      acceptNewsletter: false
+    }
   })
 
   // Observar campos para validaciones en tiempo real
@@ -167,12 +175,14 @@ export default function RegisterPage() {
       }
 
       // Registro exitoso
+      setNewUserData(result.user)
       setShowSuccess(true)
       toast.success('¡Cuenta creada exitosamente!')
       
-      // Redirigir al login después de 2 segundos
+      // Mostrar opción de dirección después de 2 segundos
       setTimeout(() => {
-        router.push('/auth/login?message=account-created')
+        setShowSuccess(false)
+        setShowAddressForm(true)
       }, 2000)
 
     } catch (error) {
@@ -181,6 +191,17 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Manejar éxito en el formulario de dirección
+  const handleAddressSuccess = () => {
+    toast.success('¡Perfil completado!')
+    router.push('/auth/login?message=account-created&address=added')
+  }
+
+  // Manejar saltar dirección
+  const handleSkipAddress = () => {
+    router.push('/auth/login?message=account-created&address=skipped')
   }
 
   if (showSuccess) {
@@ -210,6 +231,50 @@ export default function RegisterPage() {
           
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
         </motion.div>
+      </div>
+    )
+  }
+
+  if (showAddressForm) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header */}
+        <motion.header 
+          className="bg-white shadow-sm border-b"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-3">
+                <Image
+                  src="/images/zulay c logo.png"
+                  alt="Zulay C"
+                  width={120}
+                  height={40}
+                  className="h-8 w-auto"
+                />
+              </div>
+              
+              <div className="text-sm text-gray-600">
+                ¡Hola {newUserData?.name}! 👋
+              </div>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* Contenido principal */}
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <div className="max-w-md w-full">
+            <AddressForm
+              onSuccess={handleAddressSuccess}
+              onSkip={handleSkipAddress}
+              showSkipOption={true}
+              title="¿Agregar tu dirección?"
+              description="Esto te ayudará a completar tus compras más rápido"
+            />
+          </div>
+        </div>
       </div>
     )
   }
@@ -323,8 +388,10 @@ export default function RegisterPage() {
                 error={errors.phone?.message}
                 isValid={!errors.phone && (watchedPhone?.length ?? 0) > 0}
                 description="Para contactarte sobre tu pedido si es necesario"
-                value={watchedPhone}
-                onChange={(value) => setValue('phone', value)}
+                value={watchedPhone || ''}
+                onChange={(value) => {
+                  setValue('phone', value, { shouldValidate: true })
+                }}
                 onBlur={() => trigger('phone')}
               />
 
@@ -370,7 +437,10 @@ export default function RegisterPage() {
                 >
                   <Checkbox
                     id="privacy"
-                    {...register('acceptPrivacyPolicy')}
+                    checked={watch('acceptPrivacyPolicy')}
+                    onCheckedChange={(checked) => {
+                      setValue('acceptPrivacyPolicy', !!checked, { shouldValidate: true })
+                    }}
                     className="mt-1"
                   />
                   <label htmlFor="privacy" className="text-sm text-gray-700 leading-relaxed">
@@ -406,7 +476,10 @@ export default function RegisterPage() {
                 >
                   <Checkbox
                     id="newsletter"
-                    {...register('acceptNewsletter')}
+                    checked={watch('acceptNewsletter')}
+                    onCheckedChange={(checked) => {
+                      setValue('acceptNewsletter', !!checked, { shouldValidate: true })
+                    }}
                     className="mt-1"
                   />
                   <label htmlFor="newsletter" className="text-sm text-gray-700 leading-relaxed">
