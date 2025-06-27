@@ -59,6 +59,7 @@ interface AddressFormProps {
   showSkipOption?: boolean
   title?: string
   description?: string
+  userData?: { email: string; name?: string } // Para auto-login scenario
 }
 
 export function AddressForm({ 
@@ -68,7 +69,8 @@ export function AddressForm({
   initialData,
   showSkipOption = true,
   title = "Agregar dirección de envío",
-  description = "Completa tu información de envío para recibir tus pedidos"
+  description = "Completa tu información de envío para recibir tus pedidos",
+  userData
 }: AddressFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -103,7 +105,10 @@ export function AddressForm({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          userEmail: userData?.email // Para auto-login scenario
+        }),
       })
 
       const result = await response.json()

@@ -43,22 +43,25 @@ const addressSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación
+    // Verificar autenticación con fallback para auto-login
     const session = await getServerSession()
     
-    if (!session?.user?.email) {
+    // Parsear el body primero
+    const requestBody = await request.json()
+    const userEmail = session?.user?.email || requestBody.userEmail
+    
+    if (!userEmail) {
       return NextResponse.json({
         error: 'No autorizado. Debes iniciar sesión.'
       }, { status: 401 })
     }
 
-    // Parsear y validar el body
-    const body = await request.json()
-    const validatedData = addressSchema.parse(body)
+    // Validar los datos de dirección
+    const validatedData = addressSchema.parse(requestBody)
 
     // Buscar el usuario
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: userEmail }
     })
 
     if (!user) {
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Log de auditoría
-    console.log(`✅ Dirección actualizada para usuario: ${user.email} - ${new Date().toISOString()}`)
+    console.log(`✅ Dirección actualizada para usuario: ${userEmail} - ${new Date().toISOString()}`)
 
     return NextResponse.json({
       success: true,

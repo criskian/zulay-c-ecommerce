@@ -11,7 +11,7 @@ const loginSchema = z.object({
   password: z.string().min(1)
 })
 
-const handler = NextAuth({
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -94,6 +94,8 @@ const handler = NextAuth({
   },
   
   debug: process.env.NODE_ENV === 'development',
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST } 

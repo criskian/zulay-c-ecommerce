@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { signIn } from 'next-auth/react'
 import { FormField } from '@/components/ui/form-field'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { AddressForm } from '@/components/forms/address-form'
@@ -174,10 +175,24 @@ export default function RegisterPage() {
         return
       }
 
-      // Registro exitoso
+      // Registro exitoso - Auto login
       setNewUserData(result.user)
       setShowSuccess(true)
       toast.success('¡Cuenta creada exitosamente!')
+      
+      // Auto-login con las credenciales
+      const loginResult = await signIn('credentials', {
+        email: result.credentials.email,
+        password: result.credentials.password,
+        redirect: false
+      })
+
+      if (loginResult?.error) {
+        console.error('Error en auto-login:', loginResult.error)
+        toast.error('Cuenta creada pero error al iniciar sesión automáticamente')
+      } else {
+        toast.success('¡Sesión iniciada automáticamente!')
+      }
       
       // Mostrar opción de dirección después de 2 segundos
       setTimeout(() => {
@@ -272,6 +287,7 @@ export default function RegisterPage() {
               showSkipOption={true}
               title="¿Agregar tu dirección?"
               description="Esto te ayudará a completar tus compras más rápido"
+              userData={newUserData ? { email: newUserData.email, name: newUserData.name } : undefined}
             />
           </div>
         </div>

@@ -95,11 +95,15 @@ export async function POST(request: NextRequest) {
     // 7. Log de auditoría (en producción, usar logging service)
     console.log(`✅ Usuario registrado: ${newUser.email} - ${new Date().toISOString()}`)
     
-    // 8. Respuesta exitosa
+    // 8. Respuesta exitosa con datos para auto-login
     return NextResponse.json({
       success: true,
-      message: '¡Cuenta creada exitosamente! Ya puedes iniciar sesión.',
-      user: newUser
+      message: '¡Cuenta creada exitosamente!',
+      user: newUser,
+      credentials: {
+        email: validatedData.email,
+        password: validatedData.password // Solo para auto-login inmediato
+      }
     }, { status: 201 })
     
   } catch (error) {
