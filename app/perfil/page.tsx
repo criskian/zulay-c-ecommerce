@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import Image from 'next/image'
 import { fadeInUp, staggerContainer, fadeInLeft } from '@/lib/animations'
+import { useFavorites } from '@/contexts/favorites-context'
 
 // Departamentos de Colombia
 const colombianStates = [
@@ -79,6 +80,7 @@ interface UserData {
 export default function ProfilePage() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
+  const favorites = useFavorites()
   
   // Estados
   const [userData, setUserData] = useState<UserData | null>(null)
@@ -115,6 +117,20 @@ export default function ProfilePage() {
       router.push('/auth/login')
     }
   }, [status, router])
+
+  // Mostrar actualización cuando cambien los favoritos
+  const [prevFavoritesCount, setPrevFavoritesCount] = useState(0)
+  
+  useEffect(() => {
+    if (favorites.state.itemCount !== prevFavoritesCount && prevFavoritesCount > 0) {
+      if (favorites.state.itemCount > prevFavoritesCount) {
+        toast.success('¡Producto agregado a favoritos!')
+      } else if (favorites.state.itemCount < prevFavoritesCount) {
+        toast.info('Producto removido de favoritos')
+      }
+    }
+    setPrevFavoritesCount(favorites.state.itemCount)
+  }, [favorites.state.itemCount, prevFavoritesCount])
 
   // Cargar datos del usuario
   useEffect(() => {
@@ -369,15 +385,53 @@ export default function ProfilePage() {
               <Card>
                 <CardContent className="p-6 text-center">
                   <Package className="w-8 h-8 text-brand-dark mx-auto mb-2" />
-                  <p className="text-2xl font-bold">0</p>
+                  <motion.p 
+                    className="text-2xl font-bold"
+                    key="orders-count"
+                    initial={{ scale: 1.2, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    0
+                  </motion.p>
                   <p className="text-sm text-gray-600">Pedidos</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 text-center">
-                  <Heart className="w-8 h-8 text-brand-dark mx-auto mb-2" />
-                  <p className="text-2xl font-bold">0</p>
+                  <motion.div
+                    whileHover={{ 
+                      scale: 1.1,
+                      color: "#ef4444" // red-500 para el corazón
+                    }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Heart className="w-8 h-8 text-brand-dark mx-auto mb-2" />
+                  </motion.div>
+                  <motion.p 
+                    className="text-2xl font-bold"
+                    key={`favorites-${favorites.state.itemCount}`}
+                    initial={{ scale: 1.2, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {favorites.state.itemCount}
+                  </motion.p>
                   <p className="text-sm text-gray-600">Favoritos</p>
+                  {favorites.state.itemCount > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <Link 
+                        href="/favoritos" 
+                        className="text-xs text-brand-dark hover:text-brand-dark/80 transition-colors"
+                      >
+                        Ver todos →
+                      </Link>
+                    </motion.div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
@@ -679,6 +733,58 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
+            {/* Favoritos Recientes */}
+            {favorites.state.itemCount > 0 && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-brand-dark" />
+                    Favoritos Recientes
+                  </CardTitle>
+                  <Link 
+                    href="/favoritos"
+                    className="text-sm text-brand-dark hover:text-brand-dark/80 transition-colors"
+                  >
+                    Ver todos ({favorites.state.itemCount})
+                  </Link>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {favorites.state.items.slice(0, 3).map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="group"
+                      >
+                        <Link href={`/productos/${item.id}`} className="block">
+                          <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                            <div className="aspect-square bg-white rounded-md mb-3 flex items-center justify-center text-xs text-gray-400">
+                              📷 {item.name}
+                            </div>
+                            <h4 className="font-medium text-sm line-clamp-2 mb-2">{item.name}</h4>
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-semibold text-brand-dark">
+                                ${item.price.toLocaleString('es-CO')}
+                              </p>
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                <span className="text-xs text-gray-600">{item.rating}</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Agregado {new Date(item.addedAt).toLocaleDateString('es-ES')}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Actividad Reciente */}
             <Card>
               <CardHeader>
@@ -688,13 +794,46 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4">No hay actividad reciente</p>
-                  <p className="text-sm text-gray-500">
-                    Tus pedidos y actividades aparecerán aquí
-                  </p>
-                </div>
+                {favorites.state.itemCount > 0 ? (
+                  <div className="space-y-3">
+                    {favorites.state.items.slice(0, 3).map((item, index) => (
+                      <motion.div
+                        key={`activity-${item.id}`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                          <Heart className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Agregaste a favoritos</p>
+                          <p className="text-xs text-gray-600">{item.name}</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {new Date(item.addedAt).toLocaleDateString('es-ES')}
+                        </p>
+                      </motion.div>
+                    ))}
+                    <div className="pt-2">
+                      <Link 
+                        href="/favoritos" 
+                        className="text-sm text-brand-dark hover:text-brand-dark/80 transition-colors"
+                      >
+                        Ver todos los favoritos →
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">No hay actividad reciente</p>
+                    <p className="text-sm text-gray-500">
+                      Tus pedidos y actividades aparecerán aquí
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
