@@ -68,6 +68,7 @@ model User {
   emailVerified DateTime? @map("email_verified")
   image         String?
   phone         String?
+  password      String?   // For credential-based authentication
   
   // Address information
   address       String?
@@ -86,12 +87,53 @@ model User {
   // Relations
   accounts      Account[]
   sessions      Session[]
+  addresses     Address[]
   carts         Cart[]
   orders        Order[]
   reviews       Review[]
   favorites     Favorite[]
 
   @@map("users")
+}
+
+// ===============================================
+// ADDRESS MODELS
+// ===============================================
+
+model Address {
+  id            String    @id @default(cuid())
+  
+  // Address type
+  type          String    // 'home', 'work', 'other'
+  title         String    // User-friendly name
+  
+  // Contact information
+  fullName      String    @map("full_name")
+  phone         String
+  
+  // Address details
+  address       String
+  neighborhood  String
+  city          String
+  state         String
+  postalCode    String?   @map("postal_code")
+  country       String    @default("Colombia")
+  
+  // Delivery instructions
+  instructions  String?
+  
+  // Default address flag
+  isDefault     Boolean   @default(false) @map("is_default")
+  
+  // User relationship
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("addresses")
 }
 
 // ===============================================

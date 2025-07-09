@@ -15,6 +15,7 @@ import { Filter, Grid, List } from "lucide-react"
 function ProductsContent() {
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [searchQuery, setSearchQuery] = useState("")
   const [filters, setFilters] = useState({
     category: "",
     priceRange: [0, 500000],
@@ -24,14 +25,20 @@ function ProductsContent() {
     sortBy: "newest",
   })
 
-  // Establecer categoría desde query params
+  // Establecer categoría y búsqueda desde query params
   useEffect(() => {
     const categoria = searchParams.get("categoria")
+    const search = searchParams.get("search")
+    
     if (categoria) {
       setFilters(prev => ({
         ...prev,
         category: categoria
       }))
+    }
+    
+    if (search) {
+      setSearchQuery(search)
     }
   }, [searchParams])
 
@@ -43,23 +50,28 @@ function ProductsContent() {
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <motion.div
-              key={filters.category}
+              key={`${filters.category}-${searchQuery}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-3xl font-bold mb-2">
-                {filters.category 
-                  ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)}`
-                  : "Todos los Productos"
+                {searchQuery 
+                  ? `Resultados para "${searchQuery}"`
+                  : filters.category 
+                    ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)}`
+                    : "Todos los Productos"
                 }
               </h1>
               <p className="text-muted-foreground">
-                {filters.category === "zapatos" && "Descubre nuestra colección de zapatos elegantes y cómodos"}
-                {filters.category === "correas" && "Encuentra la correa perfecta para completar tu look"}
-                {filters.category === "camisetas" && "Camisetas de calidad premium para cualquier ocasión"}
-                {filters.category === "ofertas" && "Las mejores ofertas y descuentos especiales"}
-                {!filters.category && "Descubre nuestra colección completa de calzado y moda"}
+                {searchQuery 
+                  ? `Productos encontrados que coinciden con tu búsqueda`
+                  : filters.category === "zapatos" ? "Descubre nuestra colección de zapatos elegantes y cómodos"
+                  : filters.category === "correas" ? "Encuentra la correa perfecta para completar tu look"
+                  : filters.category === "camisetas" ? "Camisetas de calidad premium para cualquier ocasión"
+                  : filters.category === "ofertas" ? "Las mejores ofertas y descuentos especiales"
+                  : "Descubre nuestra colección completa de calzado y moda"
+                }
               </p>
             </motion.div>
 
@@ -105,7 +117,7 @@ function ProductsContent() {
 
             {/* Products */}
             <div className="flex-1">
-              <ProductGrid viewMode={viewMode} filters={filters} />
+              <ProductGrid viewMode={viewMode} filters={filters} searchQuery={searchQuery} />
             </div>
           </div>
         </div>

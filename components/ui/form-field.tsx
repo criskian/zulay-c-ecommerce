@@ -12,6 +12,8 @@ interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   isLoading?: boolean
   description?: string
   showPasswordToggle?: boolean
+  multiline?: boolean
+  rows?: number
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
@@ -22,6 +24,8 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
     isLoading, 
     description, 
     showPasswordToggle, 
+    multiline = false,
+    rows = 3,
     type = 'text',
     className,
     ...props 
@@ -60,47 +64,88 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
 
         {/* Container del input con estado visual */}
         <div className="relative">
-          <input
-            ref={ref}
-            type={inputType}
-            className={cn(
-              // Base styles
-              "w-full px-4 py-3 border rounded-lg transition-all duration-200",
-              "placeholder:text-gray-400 focus:outline-none",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              
-              // Estados de validación
-              hasError && [
-                "border-red-300 bg-red-50 text-red-900",
-                "focus:border-red-500 focus:ring-2 focus:ring-red-200"
-              ],
-              
-              showSuccess && [
-                "border-green-300 bg-green-50",
-                "focus:border-green-500 focus:ring-2 focus:ring-green-200"
-              ],
-              
-              !hasError && !showSuccess && [
-                "border-gray-300 bg-white",
-                "focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
-                "hover:border-gray-400"
-              ],
-              
-              // Padding para iconos
-              showPasswordToggle && "pr-12",
-              (showSuccess || hasError) && !showPasswordToggle && "pr-10",
-              
-              className
-            )}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            {...props}
-          />
+          {multiline ? (
+            <textarea
+              ref={ref as any}
+              rows={rows}
+              className={cn(
+                // Base styles
+                "w-full px-4 py-3 border rounded-lg transition-all duration-200",
+                "placeholder:text-gray-400 focus:outline-none resize-none",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                
+                // Estados de validación
+                hasError && [
+                  "border-red-300 bg-red-50 text-red-900",
+                  "focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                ],
+                
+                showSuccess && [
+                  "border-green-300 bg-green-50",
+                  "focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                ],
+                
+                !hasError && !showSuccess && [
+                  "border-gray-300 bg-white",
+                  "focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+                  "hover:border-gray-400"
+                ],
+                
+                // Padding para iconos
+                (showSuccess || hasError) && "pr-10",
+                
+                className
+              )}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              {...(props as any)}
+            />
+          ) : (
+            <input
+              ref={ref}
+              type={inputType}
+              className={cn(
+                // Base styles
+                "w-full px-4 py-3 border rounded-lg transition-all duration-200",
+                "placeholder:text-gray-400 focus:outline-none",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                
+                // Estados de validación
+                hasError && [
+                  "border-red-300 bg-red-50 text-red-900",
+                  "focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                ],
+                
+                showSuccess && [
+                  "border-green-300 bg-green-50",
+                  "focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                ],
+                
+                !hasError && !showSuccess && [
+                  "border-gray-300 bg-white",
+                  "focus:border-blue-500 focus:ring-2 focus:ring-blue-200",
+                  "hover:border-gray-400"
+                ],
+                
+                // Padding para iconos
+                showPasswordToggle && "pr-12",
+                (showSuccess || hasError) && !showPasswordToggle && "pr-10",
+                
+                className
+              )}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              {...props}
+            />
+          )}
 
           {/* Iconos de estado y toggle de password */}
-          <div className="absolute inset-y-0 right-0 flex items-center">
+          <div className={cn(
+            "absolute right-0 flex items-center",
+            multiline ? "inset-y-3" : "inset-y-0"
+          )}>
             {/* Toggle de password */}
-            {showPasswordToggle && (
+            {showPasswordToggle && !multiline && (
               <motion.button
                 type="button"
                 className={cn(
@@ -120,7 +165,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
             )}
 
             {/* Icono de estado (sin toggle de password) */}
-            {!showPasswordToggle && (
+            {(!showPasswordToggle || multiline) && (
               <div className="px-3">
                 <AnimatePresence mode="wait">
                   {hasError && (

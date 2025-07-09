@@ -363,16 +363,18 @@ export default function ProfilePage() {
                     Lista de Favoritos
                   </Button>
                 </Link>
-                <Button variant="ghost" className="w-full justify-start hover:bg-brand-dark/5 hover:text-brand-dark" disabled>
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Direcciones
-                  <span className="ml-auto text-xs text-gray-400">Próximamente</span>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start hover:bg-brand-dark/5 hover:text-brand-dark" disabled>
-                  <Shield className="w-4 h-4 mr-2" />
-                  Privacidad y Seguridad
-                  <span className="ml-auto text-xs text-gray-400">Próximamente</span>
-                </Button>
+                <Link href="/perfil/direcciones">
+                  <Button variant="ghost" className="w-full justify-start hover:bg-brand-dark/5 hover:text-brand-dark">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Direcciones
+                  </Button>
+                </Link>
+                <Link href="/perfil/privacidad">
+                  <Button variant="ghost" className="w-full justify-start hover:bg-brand-dark/5 hover:text-brand-dark">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Privacidad y Seguridad
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 

@@ -123,6 +123,34 @@ const allProducts = [
     isNew: false,
     isOffer: true,
   },
+  {
+    id: "9",
+    name: "Zapatos de Cuero Artesanal",
+    price: 250000,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.9,
+    reviews: 35,
+    category: "zapatos",
+    sizes: ["36", "37", "38", "39", "40", "41", "42"],
+    colors: ["Café", "Negro", "Marrón"],
+    brand: "Zulay C",
+    isNew: true,
+  },
+  {
+    id: "10",
+    name: "Camiseta Premium Algodón",
+    price: 75000,
+    originalPrice: 95000,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.6,
+    reviews: 28,
+    category: "camisetas",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Blanco", "Negro", "Azul", "Gris"],
+    brand: "Premium",
+    isNew: false,
+    isOffer: true,
+  },
 ]
 
 interface ProductGridProps {
@@ -135,9 +163,10 @@ interface ProductGridProps {
     brands: string[]
     sortBy: string
   }
+  searchQuery?: string
 }
 
-export function ProductGrid({ viewMode, filters }: ProductGridProps) {
+export function ProductGrid({ viewMode, filters, searchQuery }: ProductGridProps) {
   const [products, setProducts] = useState(allProducts)
   const { dispatch } = useCart()
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
@@ -146,12 +175,23 @@ export function ProductGrid({ viewMode, filters }: ProductGridProps) {
   useEffect(() => {
     let filteredProducts = [...allProducts]
 
-    // Apply filters
-    if (filters.category) {
+    // Apply search query filter first
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      filteredProducts = filteredProducts.filter((p) => 
+        p.name.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query) ||
+        p.brand.toLowerCase().includes(query) ||
+        p.colors.some(color => color.toLowerCase().includes(query))
+      )
+    }
+
+    // Apply category filters
+    if (filters.category && !searchQuery) {
       if (filters.category === "ofertas") {
         filteredProducts = filteredProducts.filter((p) => p.originalPrice && p.originalPrice > p.price)
       } else {
-      filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
+        filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
       }
     }
 
@@ -194,7 +234,7 @@ export function ProductGrid({ viewMode, filters }: ProductGridProps) {
     }
 
     setProducts(filteredProducts)
-  }, [filters])
+  }, [filters, searchQuery])
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-CO", {

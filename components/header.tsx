@@ -6,8 +6,8 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, ShoppingBag, User, Menu, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { SearchBar } from "@/components/search-bar"
 import { useCart } from "@/contexts/cart-context"
 import { useFavorites } from "@/contexts/favorites-context"
 import { useSession, signOut } from "next-auth/react"
@@ -89,13 +89,7 @@ export function Header() {
           <div className="flex items-center space-x-4">
           {/* Search Bar - Desktop */}
             <div className="hidden lg:flex items-center">
-              <div className="relative w-80">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buscar productos..."
-                className="pl-10 transition-all focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
+              <SearchBar className="w-80" />
           </div>
 
           {/* Actions */}
@@ -259,10 +253,10 @@ export function Header() {
                 transition={{ duration: 0.3, delay: 0.1 }}
                 className="py-4"
               >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Buscar productos..." className="pl-10" autoFocus />
-            </div>
+                <SearchBar 
+                  className="w-full" 
+                  onResultClick={() => setIsSearchOpen(false)}
+                />
               </motion.div>
             </motion.div>
         )}
