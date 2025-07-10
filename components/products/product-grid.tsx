@@ -11,147 +11,28 @@ import { useCart } from "@/contexts/cart-context"
 import { useFavorites } from "@/contexts/favorites-context"
 import { useToast } from "@/hooks/use-toast"
 
-// Mock products data
-const allProducts = [
-  {
-    id: "1",
-    name: "Zapatos Elegantes Negros",
-    price: 189000,
-    originalPrice: 220000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.8,
-    reviews: 24,
-    category: "zapatos",
-    sizes: ["36", "37", "38", "39", "40"],
-    colors: ["Negro", "Café"],
-    brand: "Zulay C",
-    isNew: true,
-  },
-  {
-    id: "2",
-    name: "Correa de Cuero Premium",
-    price: 85000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.9,
-    reviews: 18,
-    category: "correas",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Negro", "Café", "Marrón"],
-    brand: "Premium",
-    isNew: false,
-  },
-  {
-    id: "3",
-    name: "Camiseta Casual Blanca",
-    price: 45000,
-    originalPrice: 55000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.7,
-    reviews: 32,
-    category: "camisetas",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Blanco", "Negro", "Gris"],
-    brand: "Classic",
-    isNew: false,
-  },
-  {
-    id: "4",
-    name: "Zapatos Deportivos",
-    price: 165000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.6,
-    reviews: 15,
-    category: "zapatos",
-    sizes: ["36", "37", "38", "39", "40", "41"],
-    colors: ["Blanco", "Negro"],
-    brand: "Sport",
-    isNew: true,
-  },
-  {
-    id: "5",
-    name: "Correa Casual Marrón",
-    price: 65000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.5,
-    reviews: 12,
-    category: "correas",
-    sizes: ["S", "M", "L"],
-    colors: ["Marrón", "Negro"],
-    brand: "Classic",
-    isNew: false,
-  },
-  {
-    id: "6",
-    name: "Camiseta Polo Azul",
-    price: 55000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.4,
-    reviews: 8,
-    category: "camisetas",
-    sizes: ["M", "L", "XL"],
-    colors: ["Azul", "Blanco"],
-    brand: "Premium",
-    isNew: false,
-  },
-  {
-    id: "7",
-    name: "Zapatos Casuales Oferta",
-    price: 120000,
-    originalPrice: 160000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.5,
-    reviews: 22,
-    category: "zapatos",
-    sizes: ["36", "37", "38", "39", "40"],
-    colors: ["Café", "Negro"],
-    brand: "Zulay C",
-    isNew: false,
-    isOffer: true,
-  },
-  {
-    id: "8", 
-    name: "Correa Elegante Descuento",
-    price: 60000,
-    originalPrice: 80000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.3,
-    reviews: 16,
-    category: "correas",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Negro", "Marrón"],
-    brand: "Premium",
-    isNew: false,
-    isOffer: true,
-  },
-  {
-    id: "9",
-    name: "Zapatos de Cuero Artesanal",
-    price: 250000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.9,
-    reviews: 35,
-    category: "zapatos",
-    sizes: ["36", "37", "38", "39", "40", "41", "42"],
-    colors: ["Café", "Negro", "Marrón"],
-    brand: "Zulay C",
-    isNew: true,
-  },
-  {
-    id: "10",
-    name: "Camiseta Premium Algodón",
-    price: 75000,
-    originalPrice: 95000,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.6,
-    reviews: 28,
-    category: "camisetas",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["Blanco", "Negro", "Azul", "Gris"],
-    brand: "Premium",
-    isNew: false,
-    isOffer: true,
-  },
-]
+interface Product {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  basePrice: number
+  images: string[]
+  isNew: boolean
+  isFeatured: boolean
+  category: {
+    name: string
+    slug: string
+  }
+  variants: Array<{
+    id: string
+    color: string
+    size: string
+    price: number
+    originalPrice?: number
+    stock: number
+  }>
+}
 
 interface ProductGridProps {
   viewMode: "grid" | "list"
@@ -167,73 +48,56 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ viewMode, filters, searchQuery }: ProductGridProps) {
-  const [products, setProducts] = useState(allProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const { dispatch } = useCart()
   const { addFavorite, removeFavorite, isFavorite } = useFavorites()
   const { toast } = useToast()
 
+  // Fetch products from database
   useEffect(() => {
-    let filteredProducts = [...allProducts]
+    const fetchProducts = async () => {
+      setLoading(true)
+      try {
+        const params = new URLSearchParams()
+        
+        if (searchQuery) {
+          params.append('search', searchQuery)
+        }
+        if (filters.category && !searchQuery) {
+          params.append('category', filters.category)
+        }
+        if (filters.priceRange[0] > 0) {
+          params.append('minPrice', filters.priceRange[0].toString())
+        }
+        if (filters.priceRange[1] < 500000) {
+          params.append('maxPrice', filters.priceRange[1].toString())
+        }
+        if (filters.sizes.length > 0) {
+          params.append('sizes', filters.sizes.join(','))
+        }
+        if (filters.colors.length > 0) {
+          params.append('colors', filters.colors.join(','))
+        }
+        params.append('sortBy', filters.sortBy)
 
-    // Apply search query filter first
-    if (searchQuery && searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      filteredProducts = filteredProducts.filter((p) => 
-        p.name.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query) ||
-        p.brand.toLowerCase().includes(query) ||
-        p.colors.some(color => color.toLowerCase().includes(query))
-      )
-    }
-
-    // Apply category filters
-    if (filters.category && !searchQuery) {
-      if (filters.category === "ofertas") {
-        filteredProducts = filteredProducts.filter((p) => p.originalPrice && p.originalPrice > p.price)
-      } else {
-        filteredProducts = filteredProducts.filter((p) => p.category === filters.category)
+        const response = await fetch(`/api/products?${params.toString()}`)
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+        } else {
+          console.error('Error fetching products')
+          setProducts([])
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+        setProducts([])
+      } finally {
+        setLoading(false)
       }
     }
 
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 500000) {
-      filteredProducts = filteredProducts.filter(
-        (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1],
-      )
-    }
-
-    if (filters.sizes.length > 0) {
-      filteredProducts = filteredProducts.filter((p) => p.sizes.some((size) => filters.sizes.includes(size)))
-    }
-
-    if (filters.colors.length > 0) {
-      filteredProducts = filteredProducts.filter((p) => p.colors.some((color) => filters.colors.includes(color)))
-    }
-
-    if (filters.brands.length > 0) {
-      filteredProducts = filteredProducts.filter((p) => filters.brands.includes(p.brand))
-    }
-
-    // Apply sorting
-    switch (filters.sortBy) {
-      case "price-low":
-        filteredProducts.sort((a, b) => a.price - b.price)
-        break
-      case "price-high":
-        filteredProducts.sort((a, b) => b.price - a.price)
-        break
-      case "rating":
-        filteredProducts.sort((a, b) => b.rating - a.rating)
-        break
-      case "popular":
-        filteredProducts.sort((a, b) => b.reviews - a.reviews)
-        break
-      case "newest":
-      default:
-        filteredProducts.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0))
-        break
-    }
-
-    setProducts(filteredProducts)
+    fetchProducts()
   }, [filters, searchQuery])
 
   const formatPrice = (price: number) => {
@@ -241,193 +105,310 @@ export function ProductGrid({ viewMode, filters, searchQuery }: ProductGridProps
       style: "currency",
       currency: "COP",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price)
   }
 
-  const addToCart = (product: (typeof allProducts)[0]) => {
+  const addToCart = (product: Product) => {
+    // Use the first available variant for the cart
+    const firstVariant = product.variants[0]
+    if (!firstVariant) return
+
     dispatch({
       type: "ADD_ITEM",
       payload: {
         id: product.id,
         name: product.name,
-        price: product.price,
-        image: product.image,
-        size: product.sizes[0],
-        color: product.colors[0],
+        price: firstVariant.price,
+        image: product.images[0] || "/placeholder.svg",
         quantity: 1,
+        color: firstVariant.color,
+        size: firstVariant.size,
       },
     })
 
     toast({
-      title: "Producto agregado",
-      description: `${product.name} se agregó a tu carrito`,
+      title: "Agregado al carrito",
+      description: `${product.name} ha sido agregado a tu carrito.`,
     })
   }
 
-  const toggleFavorite = (product: (typeof allProducts)[0]) => {
-    const isCurrentlyFavorite = isFavorite(product.id)
-    
-    if (isCurrentlyFavorite) {
+  const toggleFavorite = (product: Product) => {
+    const productForFavorites = {
+      id: product.id,
+      name: product.name,
+      price: product.basePrice,
+      image: product.images[0] || "/placeholder.svg",
+      category: product.category.name,
+      rating: 4.5, // Default rating
+    }
+
+    if (isFavorite(product.id)) {
       removeFavorite(product.id)
       toast({
         title: "Eliminado de favoritos",
-        description: `${product.name} se eliminó de tus favoritos`,
+        description: `${product.name} ha sido eliminado de tus favoritos.`,
       })
     } else {
-      addFavorite({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        image: product.image,
-        rating: product.rating,
-        category: product.category,
-      })
+      addFavorite(productForFavorites)
       toast({
-        title: "¡Agregado a favoritos!",
-        description: `${product.name} se agregó a tus favoritos`,
+        title: "Agregado a favoritos",
+        description: `${product.name} ha sido agregado a tus favoritos.`,
       })
     }
+  }
+
+  // Helper function to get rating (mock for now)
+  const getProductRating = () => {
+    return (4.2 + Math.random() * 0.7).toFixed(1) // Random rating between 4.2-4.9
+  }
+
+  const getProductReviews = () => {
+    return Math.floor(8 + Math.random() * 40) // Random reviews between 8-48
+  }
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="bg-muted h-64 rounded-lg mb-4"></div>
+            <div className="bg-muted h-4 rounded mb-2"></div>
+            <div className="bg-muted h-4 rounded w-2/3 mb-2"></div>
+            <div className="bg-muted h-6 rounded w-1/3"></div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground text-lg">No se encontraron productos con los filtros seleccionados.</p>
-        <p className="text-sm text-muted-foreground mt-2">Intenta ajustar los filtros para ver más resultados.</p>
+        <div className="text-muted-foreground mb-4">
+          <Eye className="h-12 w-12 mx-auto opacity-50" />
+        </div>
+        <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
+        <p className="text-muted-foreground">
+          {searchQuery 
+            ? `No hay productos que coincidan con "${searchQuery}"`
+            : "Intenta ajustar los filtros para ver más productos"
+          }
+        </p>
+      </div>
+    )
+  }
+
+  if (viewMode === "list") {
+    return (
+      <div className="space-y-6">
+        {products.map((product) => {
+          // Fix price calculations
+          const availablePrices = product.variants.map(v => v.price).filter(p => p && !isNaN(p) && isFinite(p))
+          const availableOriginalPrices = product.variants
+            .map(v => v.originalPrice)
+            .filter(p => p && !isNaN(p) && isFinite(p) && p > 0)
+          
+          const minPrice = availablePrices.length > 0 ? Math.min(...availablePrices) : product.basePrice
+          const maxOriginalPrice = availableOriginalPrices.length > 0 ? Math.max(...availableOriginalPrices) : null
+          
+          const hasOriginalPrice = maxOriginalPrice && maxOriginalPrice > minPrice
+          const discount = hasOriginalPrice 
+            ? Math.round(((maxOriginalPrice - minPrice) / maxOriginalPrice) * 100)
+            : null
+
+          return (
+            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <CardContent className="p-0">
+                <div className="flex">
+                  <div className="relative w-48 h-48 flex-shrink-0">
+                    <Image
+                      src={product.images[0] || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                    />
+                    {product.isNew && (
+                      <Badge className="absolute top-2 left-2 bg-green-500">
+                        Nuevo
+                      </Badge>
+                    )}
+                    {discount && discount > 0 && (
+                      <Badge className="absolute top-2 right-2 bg-red-500">
+                        -{discount}%
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex-1 p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-lg">{product.name}</h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleFavorite(product)}
+                        className="text-muted-foreground hover:text-red-500"
+                      >
+                        <Heart
+                          className={`h-5 w-5 ${
+                            isFavorite(product.id) ? "fill-red-500 text-red-500" : ""
+                          }`}
+                        />
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {product.category.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center mb-4">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm text-muted-foreground ml-1">
+                          {getProductRating()} ({getProductReviews()})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-primary">
+                          {formatPrice(minPrice)}
+                        </span>
+                        {hasOriginalPrice && maxOriginalPrice && (
+                          <span className="text-sm text-muted-foreground line-through">
+                            {formatPrice(maxOriginalPrice)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/productos/${product.slug}`}>
+                            Ver Detalles
+                          </Link>
+                        </Button>
+                        <Button size="sm" onClick={() => addToCart(product)}>
+                          <ShoppingBag className="h-4 w-4 mr-2" />
+                          Agregar
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">
-          Mostrando {products.length} producto{products.length !== 1 ? "s" : ""}
-        </p>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.map((product) => {
+        // Fix price calculations
+        const availablePrices = product.variants.map(v => v.price).filter(p => p && !isNaN(p) && isFinite(p))
+        const availableOriginalPrices = product.variants
+          .map(v => v.originalPrice)
+          .filter(p => p && !isNaN(p) && isFinite(p) && p > 0)
+        
+        const minPrice = availablePrices.length > 0 ? Math.min(...availablePrices) : product.basePrice
+        const maxOriginalPrice = availableOriginalPrices.length > 0 ? Math.max(...availableOriginalPrices) : null
+        
+        const hasOriginalPrice = maxOriginalPrice && maxOriginalPrice > minPrice
+        const discount = hasOriginalPrice 
+          ? Math.round(((maxOriginalPrice - minPrice) / maxOriginalPrice) * 100)
+          : null
 
-      <div
-        className={
-          viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"
-        }
-      >
-        {products.map((product) => (
-          <Card
-            key={product.id}
-            className={`group overflow-hidden hover:shadow-lg transition-all duration-300 ${
-              viewMode === "list" ? "flex" : ""
-            }`}
-          >
+        return (
+          <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
             <CardContent className="p-0">
-              <div
-                className={`relative overflow-hidden ${viewMode === "list" ? "w-48 flex-shrink-0" : "aspect-square"}`}
-              >
-                <Image
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-
+              <div className="relative">
+                <Link href={`/productos/${product.slug}`}>
+                  <div className="aspect-square relative overflow-hidden">
+                    <Image
+                      src={product.images[0] || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </Link>
+                
                 {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {product.isNew && <Badge className="bg-green-500 hover:bg-green-600">Nuevo</Badge>}
-                  {product.originalPrice && (
-                    <Badge variant="destructive">
-                      -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                <div className="absolute top-2 left-2 flex flex-col gap-1">
+                  {product.isNew && (
+                    <Badge className="bg-green-500 hover:bg-green-600">
+                      Nuevo
+                    </Badge>
+                  )}
+                  {discount && discount > 0 && (
+                    <Badge className="bg-red-500 hover:bg-red-600">
+                      -{discount}%
                     </Badge>
                   )}
                 </div>
 
-                {/* Actions */}
-                <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-8 w-8"
-                    onClick={() => toggleFavorite(product)}
-                  >
-                    <Heart className={`h-4 w-4 ${isFavorite(product.id) ? "fill-red-500 text-red-500" : ""}`} />
-                  </Button>
-                  <Button size="icon" variant="secondary" className="h-8 w-8" asChild>
-                    <Link href={`/productos/${product.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-
-                {/* Quick Add to Cart - Grid View */}
-                {viewMode === "grid" && (
-                  <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button className="w-full" size="sm" onClick={() => addToCart(product)}>
-                      <ShoppingBag className="h-4 w-4 mr-2" />
-                      Agregar
-                    </Button>
-                  </div>
-                )}
+                {/* Heart Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => toggleFavorite(product)}
+                  className="absolute top-2 right-2 text-white hover:text-red-500 bg-black/20 hover:bg-white/90"
+                >
+                  <Heart
+                    className={`h-5 w-5 ${
+                      isFavorite(product.id) ? "fill-red-500 text-red-500" : ""
+                    }`}
+                  />
+                </Button>
               </div>
 
-              <div className={`p-4 ${viewMode === "list" ? "flex-1" : ""}`}>
-                <Link href={`/productos/${product.id}`}>
-                  <h3 className="font-semibold mb-2 hover:text-primary transition-colors line-clamp-2">
+              <div className="p-4">
+                <Link href={`/productos/${product.slug}`}>
+                  <h3 className="font-semibold mb-1 hover:text-primary transition-colors">
                     {product.name}
                   </h3>
                 </Link>
+                
+                <p className="text-sm text-muted-foreground mb-2">
+                  {product.category.name}
+                </p>
 
-                <div className="flex items-center gap-1 mb-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${
-                          i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-muted-foreground">({product.reviews})</span>
-                </div>
-
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="font-bold text-lg">{formatPrice(product.price)}</span>
-                  {product.originalPrice && (
-                    <span className="text-sm text-muted-foreground line-through">
-                      {formatPrice(product.originalPrice)}
+                <div className="flex items-center mb-3">
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm text-muted-foreground ml-1">
+                      {getProductRating()} ({getProductReviews()})
                     </span>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {product.colors.slice(0, 3).map((color) => (
-                    <Badge key={color} variant="outline" className="text-xs">
-                      {color}
-                    </Badge>
-                  ))}
-                  {product.colors.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{product.colors.length - 3}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* List View Actions */}
-                {viewMode === "list" && (
-                  <div className="flex gap-2">
-                    <Button className="flex-1" onClick={() => addToCart(product)}>
-                      <ShoppingBag className="h-4 w-4 mr-2" />
-                      Agregar al Carrito
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <Link href={`/productos/${product.id}`}>Ver Detalles</Link>
-                    </Button>
                   </div>
-                )}
+                </div>
+
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-primary">
+                      {formatPrice(minPrice)}
+                    </span>
+                    {hasOriginalPrice && maxOriginalPrice && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatPrice(maxOriginalPrice)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full" 
+                  onClick={() => addToCart(product)}
+                  size="sm"
+                >
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  Agregar al Carrito
+                </Button>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        )
+      })}
     </div>
   )
 }
