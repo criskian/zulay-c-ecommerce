@@ -56,6 +56,7 @@ export const authOptions = {
             email: user.email,
             image: user.image,
             phone: user.phone,
+            role: user.role || 'CUSTOMER',
           }
         } catch (error) {
           console.error('Error en autorización:', error)
@@ -66,23 +67,38 @@ export const authOptions = {
   ],
   
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
   
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id
         token.phone = user.phone
+        token.role = user.role
+      } else if (token.email) {
+        // Obtener el rol actualizado de la base de datos en cada token refresh
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email },
+            select: { role: true }
+          })
+          if (dbUser) {
+            token.role = dbUser.role
+          }
+        } catch (error) {
+          console.error('Error obteniendo rol del usuario:', error)
+        }
       }
       return token
     },
     
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.phone = token.phone as string | null
+        session.user.role = token.role as string | null
       }
       return session
     }

@@ -70,6 +70,9 @@ model User {
   phone         String?
   password      String?   // For credential-based authentication
   
+  // User role
+  role          UserRole  @default(CUSTOMER)
+  
   // Address information
   address       String?
   city          String?
@@ -400,6 +403,11 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   PARTIALLY_REFUNDED
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
 }
 
 // ===============================================

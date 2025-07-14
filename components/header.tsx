@@ -201,6 +201,26 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link href="/favoritos">Favoritos</Link>
                   </DropdownMenuItem>
+                  
+                  {/* Admin Options */}
+                  {session.user?.role === 'ADMIN' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/productos">Gestión de Productos</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/pedidos">Gestión de Pedidos</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/usuarios">Gestión de Usuarios</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/reportes">Reportes</Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()}>Cerrar Sesión</DropdownMenuItem>
                 </DropdownMenuContent>
