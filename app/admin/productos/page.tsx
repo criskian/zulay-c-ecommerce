@@ -118,20 +118,31 @@ export default function AdminProductsPage() {
 
   const toggleProductStatus = async (productId: string) => {
     try {
-      const response = await fetch(`/api/admin/products/${productId}/toggle`, {
-        method: 'PATCH'
+      // Obtener el producto actual para determinar el nuevo estado
+      const currentProduct = products.find(p => p.id === productId)
+      if (!currentProduct) return
+
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          isActive: !currentProduct.isActive
+        })
       })
       
       if (response.ok) {
         loadProducts()
         toast({
           title: "Éxito",
-          description: "Estado del producto actualizado"
+          description: `Producto ${!currentProduct.isActive ? 'activado' : 'desactivado'} correctamente`
         })
       } else {
+        const errorData = await response.json()
         toast({
           title: "Error",
-          description: "No se pudo actualizar el producto",
+          description: errorData.error || "No se pudo actualizar el producto",
           variant: "destructive"
         })
       }
@@ -145,7 +156,19 @@ export default function AdminProductsPage() {
   }
 
   const deleteProduct = async (productId: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) return
+    // Obtener información del producto para mostrar en la confirmación
+    const productToDelete = products.find(p => p.id === productId)
+    if (!productToDelete) return
+
+    const confirmed = confirm(
+      `¿Estás seguro de que quieres eliminar el producto "${productToDelete.name}"?\n\n` +
+      `Esta acción no se puede deshacer y eliminará:\n` +
+      `- El producto y todas sus variantes\n` +
+      `- Todo el inventario asociado\n\n` +
+      `¿Continuar con la eliminación?`
+    )
+    
+    if (!confirmed) return
     
     try {
       const response = await fetch(`/api/admin/products/${productId}`, {
@@ -155,20 +178,22 @@ export default function AdminProductsPage() {
       if (response.ok) {
         loadProducts()
         toast({
-          title: "Éxito",
-          description: "Producto eliminado correctamente"
+          title: "Producto eliminado",
+          description: `"${productToDelete.name}" ha sido eliminado correctamente`
         })
       } else {
+        const errorData = await response.json()
         toast({
-          title: "Error",
-          description: "No se pudo eliminar el producto",
+          title: "Error al eliminar",
+          description: errorData.error || "No se pudo eliminar el producto",
           variant: "destructive"
         })
       }
     } catch (error) {
+      console.error('Error eliminando producto:', error)
       toast({
-        title: "Error",
-        description: "Error de conexión",
+        title: "Error de conexión",
+        description: "No se pudo conectar con el servidor. Intenta de nuevo.",
         variant: "destructive"
       })
     }
