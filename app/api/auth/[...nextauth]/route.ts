@@ -37,8 +37,12 @@ export const authOptions = {
             }
           })
 
-          if (!user || !user.accounts.length) {
-            return null
+          if (!user) {
+            throw new Error('No existe una cuenta con este correo electrónico')
+          }
+
+          if (!user.accounts.length) {
+            throw new Error('No se encontró información de autenticación para este usuario')
           }
 
           // Verificar contraseña (guardada en refresh_token del Account)
@@ -46,7 +50,7 @@ export const authOptions = {
           const isPasswordValid = await bcrypt.compare(password, account.refresh_token || '')
 
           if (!isPasswordValid) {
-            return null
+            throw new Error('La contraseña es incorrecta')
           }
 
           // Retornar usuario sin datos sensibles
@@ -60,7 +64,8 @@ export const authOptions = {
           }
         } catch (error) {
           console.error('Error en autorización:', error)
-          return null
+          // Re-lanzar el error para que NextAuth lo pueda manejar
+          throw error
         }
       }
     })
@@ -106,7 +111,6 @@ export const authOptions = {
   
   pages: {
     signIn: '/auth/login',
-    // error: '/auth/error', // Página de error personalizada (opcional)
   },
   
   debug: process.env.NODE_ENV === 'development',

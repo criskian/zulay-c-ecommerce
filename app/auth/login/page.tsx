@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
@@ -22,12 +23,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
     try {
       const result = await signIn("credentials", {
@@ -37,29 +40,47 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
+        // Mostrar error específico
+        let errorMessage = "Credenciales incorrectas. Por favor verifica tu email y contraseña."
+        
+        // Personalizar mensaje según el tipo de error
+        if (result.error.includes("correo electrónico")) {
+          errorMessage = "No existe una cuenta con este correo electrónico."
+        } else if (result.error.includes("contraseña")) {
+          errorMessage = "La contraseña es incorrecta."
+        } else if (result.error.includes("información de autenticación")) {
+          errorMessage = "Hay un problema con tu cuenta. Contacta al soporte."
+        }
+        
+        setError(errorMessage)
         toast({
           title: "Error de autenticación",
-          description: "Credenciales incorrectas. Por favor verifica tu email y contraseña.",
+          description: errorMessage,
           variant: "destructive",
         })
-      } else {
+      } else if (result?.ok) {
         toast({
           title: "¡Bienvenido!",
           description: "Has iniciado sesión correctamente.",
         })
 
-        // Check if user is admin
-        const session = await getSession()
-        if (session?.user?.role === "ADMIN") {
-          router.push("/admin")
-        } else {
-          router.push("/")
-        }
+        // Redirigir a la página principal para todos los usuarios
+        router.push("/")
+      } else {
+        // Si no hay error específico pero tampoco fue exitoso
+        setError("Error inesperado al iniciar sesión. Por favor intenta de nuevo.")
+        toast({
+          title: "Error",
+          description: "Error inesperado al iniciar sesión. Por favor intenta de nuevo.",
+          variant: "destructive",
+        })
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = "Ocurrió un error inesperado. Por favor intenta de nuevo."
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: "Ocurrió un error inesperado. Por favor intenta de nuevo.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -91,6 +112,13 @@ export default function LoginPage() {
               <CardDescription>Ingresa tus credenciales para acceder a tu cuenta</CardDescription>
             </CardHeader>
             <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo Electrónico</Label>
@@ -101,7 +129,10 @@ export default function LoginPage() {
                       type="email"
                       placeholder="tu@email.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        if (error) setError("")
+                      }}
                       className="pl-10"
                       required
                     />
@@ -117,7 +148,10 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="Tu contraseña"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        if (error) setError("")
+                      }}
                       className="pl-10 pr-10"
                       required
                     />
