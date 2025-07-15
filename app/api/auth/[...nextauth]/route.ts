@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@auth/prisma-adapter'
-import { prisma } from '@/lib/prisma'
+import { prisma, executeWithRetry } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
@@ -85,15 +85,18 @@ export const authOptions = {
       } else if (token.email) {
         // Obtener el rol actualizado de la base de datos en cada token refresh
         try {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: token.email },
-            select: { role: true }
+          const dbUser = await executeWithRetry(async () => {
+            return await prisma.user.findUnique({
+              where: { email: token.email },
+              select: { role: true }
+            })
           })
           if (dbUser) {
             token.role = dbUser.role
           }
         } catch (error) {
           console.error('Error obteniendo rol del usuario:', error)
+          // Mantener el rol actual del token si hay error
         }
       }
       return token
