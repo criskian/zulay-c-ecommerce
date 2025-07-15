@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
     const transformedProducts = products.map(product => ({
       id: product.id,
       name: product.name,
+      slug: product.slug,
       category: product.category.name,
       basePrice: Number(product.basePrice),
       stock: product.variants.reduce((total, variant) => total + variant.stock, 0),

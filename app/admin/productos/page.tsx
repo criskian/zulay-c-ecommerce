@@ -46,6 +46,7 @@ import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations"
 interface Product {
   id: string
   name: string
+  slug?: string
   category: string
   basePrice: number
   stock: number
@@ -430,7 +431,7 @@ export default function AdminProductsPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => router.push(`/productos/${product.id}`)}>
+                                <DropdownMenuItem onClick={() => router.push(`/productos/${product.slug || product.id}`)}>
                                   <Eye className="mr-2 h-4 w-4" />
                                   Ver Producto
                                 </DropdownMenuItem>
